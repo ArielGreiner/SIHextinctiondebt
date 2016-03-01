@@ -1,4 +1,4 @@
-setwd("~/Documents/Scientific Work/Projects/Spatial Insurance 2.0/SIH 2.0")
+setwd("~/GitHub/SIH Extinction Debt")
 source("./Functions/rewire.R")
 source("./Functions/create_random_net.r")
 source("./Functions/addweights.r")
@@ -6,15 +6,17 @@ require(igraph)
 require(dplyr)
 require(ggplot2)
 require(tidyr)
+require(data.table)
 
-reps<-10
+reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-9
 numCom<-30
-randV<-50#seq(10,90,by=20)
-dispV<- c(0.0005,0.005,0.015)
-dd<-1
+randV<-50#seq(10,90,by=20) #randV/100 = % random links
+dispV <- 0.005
+#dispV<- c(0.0005,0.005,0.015)
+dd<-1 #distance decay
 numLinks<-numCom*2
 
 
@@ -24,12 +26,12 @@ eff<-0.2 #conversion efficiency
 mort<-0.2 #mortality
 Ext<- 0.1 #extinction Threshold
 
-ePeriod<-40000#40000 #period of env sinusoidal fluctuations
+ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
 drop_length<-ePeriod
 
-Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim
+Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tdata<- seq(1, Tmax)
 DT<- 0.08 # % size of discrete "time steps"
 sampleV<-seq(102000,Tmax,by=2000)
@@ -38,8 +40,9 @@ removeV<-c("Max betweenness","Min betweenness","Random")
 Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
-
-
+#Extinction Debt data frames
+ED_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional1stDebtTime = NA, R_SRLoss = NA)
+EDlocal_data<-data.frame(Rep=rep(1:reps,each=numCom*numCom),Dispersal=rep(dispV,each=reps*numCom*numCom),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*numCom*numCom),PatchID = rep(c(1:30),each=reps*numCom),Patches=NA,LocalDebtTime=NA, L_SRLoss = NA)
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -237,78 +240,59 @@ for(r in 1:reps){
       Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
       
       Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
+      
+      #Extinction Debt Things      
+      
+      #need to change the '20' to something else if change the time interval b/w patch deletions
+      R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=20))
+      
+      R_debt<-R_SR.df%>%
+        group_by(Patches)%>%
+        summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR>=first(R_SR)),Loss=first(R_SR)-last(R_SR))
+      
+      R_debt$Debt_t[R_debt$Debt_t==20]<-NA
+      
+      ED_data_reps$Regional1stDebtTime[ED_data_reps$Rep==r & ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_debt$Debt_t
+      
+      ED_data_reps$Patches[ED_data_reps$Rep==r & ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-c(30:1)
+      
+      ED_data_reps$R_SRLoss[ED_data_reps$Rep==r & ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_debt$Loss
+      
+      ####EDlocal_data<-data.frame(Rep=rep(1:reps,each=numCom*numCom),Dispersal=rep(dispV,each=reps*numCom*numCom),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*numCom*numCom),PatchID = rep(c(1:30),each=reps*numCom),Patches=NA,LocalDebtTime=NA, L_SRLoss = NA)
+      
+      L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=20))
+      
+      debt.f<-function(x){sum(x>=first(x))}
+      
+      L_debt<-L_SR.df%>%
+        group_by(Patches)%>%
+        summarise_each(funs(debt.f))
+      
+      loss.f<-function(x){sum(first(x)-last(x))}
+      
+      L_loss<-L_SR.df%>%
+        group_by(Patches)%>%
+        summarise_each(funs(loss.f))
+      
+      L_SR.df<-gather(L_debt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
+      L_SR.df$Debt_t[L_SR.df$Debt_t==20]<-NA
+      L_loss2<-gather(L_loss,key = Patch, value=Loss, L_SR.V1:L_SR.V30)
+      
+      
+      EDlocal_data$Patches[EDlocal_data$Rep==r & EDlocal_data$Dispersal==dispV[i] & EDlocal_data$Patch_remove==removeV[j]]<-c(30:1)
+      
+      for(f in 1:numCom){
+        EDlocal_data$Local1stDebtTime[EDlocal_data$Rep==r & EDlocal_data$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j] & EDlocal_data$PatchID==f]<-L_SR.df$Debt_t[L_SR.df$Patch == paste("L_SR.V",sep ='',f)]
+        
+        #need to fix the line below
+        EDlocal_data$L_SRLoss[EDlocal_data$Rep==r & EDlocal_data$Dispersal==dispV[i] & EDlocal_data$Patch_remove==removeV[j] & EDlocal_data$PatchID==f]<-L_loss2$Loss[L_loss2$Patch == paste("L_SR.V",sep ='',f)]
+      }
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
 }
 
-setwd("~/Dropbox/SIH/Ecography")
-save(Meta_dyn_reps,Component_data_reps,SIH_data_reps,file="Fragmentation.RData")
-
-hold<-summarize(group_by(Meta_dyn_reps,Dispersal,Patch_remove,Patches,Dynamic),Mean=mean(Proportion,na.rm=T),Proportion_sd=sd(Proportion,na.rm = T))
-
-
-pdf("4. SIH dynamics with fragmentation.pdf",width = 11,height = 8.5)
-ggplot(hold,aes(x=Patches,y=Mean, group=interaction(Dynamic,Patch_remove), color=Dynamic, fill=Dynamic))+
-  geom_ribbon(aes(ymin = Mean - Proportion_sd, ymax = Mean + Proportion_sd),alpha=0.3)+
-  geom_line(size=1.2)+
-  facet_grid(Patch_remove~Dispersal)+
-  #scale_color_manual(values = c(gg_color_hue(3),"grey50"))+
-  #scale_fill_manual(values=c(gg_color_hue(3),"grey50"))+
-  xlim(30,0)+
-  theme_bw(base_size = 16)+
-  scale_y_continuous(breaks=seq(0,1,length=3))+
-  ylab("Proportion of biomass production")
-dev.off()
 
 
 
-SIH_long<-gather(SIH_data_reps,key = SIH_attribute,value = Value,Regional_SR:Local_CV)
 
-SIH_means<-SIH_long %>%
-  select(Rep,Dispersal,Patch_remove,Patches,SIH_attribute,Value) %>%
-  group_by(Dispersal,Patch_remove,Patches,SIH_attribute) %>%
-  summarise(Mean=mean(Value,na.rm=T),value_sd=sd(Value,na.rm=T))
-
-
-pdf("5. Diversity and biomass with fragmentation.pdf",width = 11,height = 8.5)
-ggplot(SIH_means,aes(x=Patches,y=Mean, group=interaction(Dispersal,Patch_remove), color=Patch_remove, fill=Patch_remove))+
-  geom_ribbon(aes(ymin = Mean - value_sd, ymax = Mean + value_sd),alpha=0.3)+
-  geom_line(size=1.2)+
-  facet_grid(SIH_attribute~Dispersal,scale='free')+
-  scale_color_brewer(type = "qual",palette = "Dark2")+
-  scale_fill_brewer(type = "qual",palette = "Dark2")+
-  xlim(30,0)+
-  theme_bw(base_size = 16)+
-  ylab("Value")
-dev.off()
-
-ggplot(SIH_means,aes(x=Patches,y=Mean, group=interaction(Dispersal,Patch_remove), color=Patch_remove, fill=Patch_remove))+
-  #geom_ribbon(aes(ymin = Mean - value_sd, ymax = Mean + value_sd),alpha=0.3)+
-  geom_line(size=1.2)+
-  facet_grid(SIH_attribute~Dispersal,scale='free')+
-  scale_color_brewer(type = "qual",palette = "Dark2")+
-  scale_fill_brewer(type = "qual",palette = "Dark2")+
-  xlim(30,0)+
-  theme_bw(base_size = 16)+
-  ylab("Value")
-
-
-Network_components<-gather(Component_data_reps,key = Component_attribute,value = Value,Component_num:Component_range)
-
-Component_means<-Network_components %>%
-  select(Rep,Patch_remove,Patches,Component_attribute,Value) %>%
-  group_by(Patch_remove,Patches,Component_attribute) %>%
-  summarise(Mean=mean(Value,na.rm=T),value_sd=sd(Value,na.rm=T))
-
-pdf("3. Network components with fragmentation.pdf",width = 8,height = 8.5)
-ggplot(Component_means,aes(x=Patches,y=Mean, group=Patch_remove, color=Patch_remove, fill=Patch_remove))+
-  geom_ribbon(aes(ymin = Mean - value_sd, ymax = Mean + value_sd),alpha=0.3)+
-  geom_line(size=1.2)+
-  facet_grid(Component_attribute~.,scale='free')+
-  scale_color_brewer(type = "qual",palette = 2)+
-  scale_fill_brewer(type = "qual",palette = 2)+
-  xlim(30,0)+
-  theme_bw(base_size = 16)+
-  ylab("Value")
-dev.off()
