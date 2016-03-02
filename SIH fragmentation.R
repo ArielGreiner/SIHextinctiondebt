@@ -41,8 +41,9 @@ Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 #Extinction Debt data frames
-ED_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional1stDebtTime = NA, R_SRLoss = NA)
-EDlocal_data<-data.frame(Rep=rep(1:reps,each=numCom*numCom),Dispersal=rep(dispV,each=reps*numCom*numCom),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*numCom*numCom),PatchID = rep(c(1:30),each=reps*numCom),Patches=NA,LocalDebtTime=NA, L_SRLoss = NA)
+ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),
+  Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),
+  Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -76,15 +77,6 @@ for(r in 1:reps){
       Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA,Patches=NA)
       Species_data<-array(NA,dim=c(length(sampleV),nSpecies,2),dimnames = list(sampleV,1:nSpecies,c("Abundance","Occupancy")))
       Components<-data.frame(Number_components=rep(NA, length(sampleV)),Component_size=NA,Component_envt_range=NA)
-      #Extinction Debt data frames
-      ED_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),
-                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),
-                               each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional1stDebtTime = NA, 
-                               RegionallastDebtTime = NA, R_SRLoss = NA)
-      EDlocal_data<-data.frame(Rep=rep(1:reps,each=numCom),Dispersal=rep(dispV,each=reps*numCom*numCom),
-                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),
-                               each=length(dispV)*reps*numCom*numCom),PatchID = rep(c(1:numCom),each=reps*numCom),
-                               Patches=NA,Local1stDebtTime=NA, LocallastDebtTime=NA, L_SRLoss = NA)
       
       for(TS in 1:Tmax){
         #print(TS)
@@ -263,7 +255,7 @@ R_debt<-R_SR.df%>%
   
 R_debt$Debt_t[R_debt$Debt_t==20]<-NA
 
-ED_data_reps$Regional1stDebtTime[ED_data_reps$Rep==r & ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_debt$Debt_t
+ED_data$FirstDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale == "Regional"]<-R_debt$Debt_t
 
 R_lastdebt<-R_SR.df%>%
   group_by(Patches)%>%
@@ -271,17 +263,17 @@ R_lastdebt<-R_SR.df%>%
   
 R_lastdebt$Debt_t[R_lastdebt$Debt_t==20]<-0
 
-ED_data_reps$Regional1stDebtTime[ED_data_reps$Rep==r & 
-   ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_debt$Debt_t
+ED_data$FirstDebtTime[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Debt_t
 
-ED_data_reps$RegionallastDebtTime[ED_data_reps$Rep==r & 
-   ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_lastdebt$Debt_t
+ED_data$LastDebtTime[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Debt_t
 
-ED_data_reps$Patches[ED_data_reps$Rep==r & 
-   ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-c(30:1)
+ED_data$Patches[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j]]<-c(30:1)
 
-ED_data_reps$R_SRLoss[ED_data_reps$Rep==r & 
-   ED_data_reps$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j]]<-R_debt$Loss
+ED_data$SRLoss[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Loss
 
 L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=20))
 
@@ -308,46 +300,50 @@ L_SR.df$Debt_t[L_SR.df$Debt_t==20]<-NA
 L_SRlast.df<-gather(L_lastdebt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
 L_SRlast.df$Debt_t[L_SRlast.df$Debt_t==20]<-0
 L_loss2<-gather(L_loss,key = Patch, value=Loss, L_SR.V1:L_SR.V30)
+L_SR.df$LastDebt <- L_SRlast.df$Debt_t
+L_SR.df$SRLoss <- L_loss2$Loss
+#above: created data frame with SR Loss, Last Debt Time and First Debt Time, separated by patch
+LocalSum<-summarise(group_by(L_SR.df, Patches), Mean_LocalFirstDebt=mean(Debt_t,na.rm=T), 
+  Mean_LocalLastDebt=mean(LastDebt,na.rm=T), Mean_LocalSRLoss=mean(SRLoss,na.rm=T))
 
+#ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),
+  #Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),
+  #Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
 
-EDlocal_data$Patches[EDlocal_data$Rep==r & EDlocal_data$Dispersal==dispV[i] & EDlocal_data$Patch_remove==removeV[j]]<-c(30:1)
+ED_data$FirstDebtTime[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalFirstDebt
 
-for(f in 1:numCom){
-EDlocal_data$Local1stDebtTime[EDlocal_data$Rep==r & 
-  EDlocal_data$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j] & EDlocal_data$PatchID==f]<-L_SR.df$Debt_t[L_SR.df$Patch == paste("L_SR.V",sep ='',f)]
+ED_data$LastDebtTime[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalLastDebt
 
-EDlocal_data$LocallastDebtTime[EDlocal_data$Rep==r & 
-  EDlocal_data$Dispersal==dispV[i] & ED_data_reps$Patch_remove==removeV[j] & EDlocal_data$PatchID==f]<-L_SRlast.df$Debt_t[L_SRlast.df$Patch == paste("L_SR.V",sep ='',f)]
-
-EDlocal_data$L_SRLoss[EDlocal_data$Rep==r & 
-  EDlocal_data$Dispersal==dispV[i] & EDlocal_data$Patch_remove==removeV[j] & EDlocal_data$PatchID==f]<-L_loss2$Loss[L_loss2$Patch == paste("L_SR.V",sep ='',f)]
-}
+ED_data$SRLoss[ED_data$Rep==r & 
+   ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
 
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
 }
 
-ED_localdata_summd <-summarise(group_by(EDlocal_data, Dispersal, Patch_remove, Patches, Rep), Mean_Local1stDebt=mean(Local1stDebtTime,na.rm=T), 
-  Mean_LocallastDebt=mean(LocallastDebtTime,na.rm=T), Mean_LocalSRLoss=mean(L_SRLoss,na.rm=T))
+ED_localdata_summd <-summarise(group_by(EDlocal_data, Dispersal, Patch_remove, Patches, Rep), Mean_Local1stDebt=mean(LocalFirstDebtTime,na.rm=T), 
+  Mean_LocallastDebt=mean(LocallastDebtTime,na.rm=T), Mean_LocalSRLoss=mean(SRLoss,na.rm=T))
 
 ED_localdata_summd2 <-summarise(group_by(ED_localdata_summd, Dispersal, Patch_remove, Patches), 
   Mean_Local1stDebt2=mean(Mean_Local1stDebt,na.rm=T), SD_Local1stDebt2=sd(Mean_Local1stDebt,na.rm=T), Mean_LocallastDebt2=mean(Mean_LocallastDebt,na.rm=T), SD_LocallastDebt2=sd(Mean_LocallastDebt,na.rm=T), Mean_LocalSRLoss2=mean(Mean_LocalSRLoss,na.rm=T), SD_LocalSRLoss2=sd(Mean_LocalSRLoss, na.rm=T))
 
-ED_regionaldata_total<-summarise(group_by(ED_data_reps, Dispersal, Patch_remove, Patches), 
-  Mean_Regional1stDebtTime=mean(Regional1stDebtTime,na.rm=T), SD_Regional1stDebtTime=sd(Regional1stDebtTime,na.rm=T), Mean_RegionallastDebtTime=mean(RegionallastDebtTime,na.rm=T), 
-  SD_RegionallastDebtTime=sd(RegionallastDebtTime,na.rm=T), Mean_R_SRLoss=mean(R_SRLoss, na.rm=T), SD_R_SRLoss=sd(R_SRLoss, na.rm=T))
+ED_regionaldata_total<-summarise(group_by(EDregional_data, Dispersal, Patch_remove, Patches), 
+  Mean_FirstDebtTime=mean(FirstDebtTime,na.rm=T), SD_FirstDebtTime=sd(FirstDebtTime,na.rm=T), Mean_RegionallastDebtTime=mean(RegionallastDebtTime,na.rm=T), 
+  SD_RegionallastDebtTime=sd(RegionallastDebtTime,na.rm=T), Mean_SRLoss=mean(SRLoss, na.rm=T), SD_SRLoss=sd(SRLoss, na.rm=T))
 
 ED_totaldata<-data.frame(Dispersal=rep(dispV,each=(numCom)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),
-  each=length(dispV)*(numCom)),Patches=c(numCom:1),Mean_Regional1stDebtTime = NA, SD_Regional1stDebtTime = NA, Mean_RegionallastDebtTime = NA, SD_RegionallastDebtTime = NA, Mean_RegionalSRLoss=NA, SD_RegionalSRLoss = NA, Mean_Local1stDebtTime = NA, SD_Local1stDebtTime = NA, Mean_LocallastDebtTime = NA, SD_LocallastDebtTime = NA, Mean_LocalSRLoss = NA, SD_LocalSRLoss = NA)
+  each=length(dispV)*(numCom)),Patches=c(numCom:1),Mean_FirstDebtTime = NA, SD_FirstDebtTime = NA, Mean_RegionallastDebtTime = NA, SD_RegionallastDebtTime = NA, Mean_RegionalSRLoss=NA, SD_RegionalSRLoss = NA, Mean_LocalFirstDebtTime = NA, SD_LocalFirstDebtTime = NA, Mean_LocallastDebtTime = NA, SD_LocallastDebtTime = NA, Mean_LocalSRLoss = NA, SD_LocalSRLoss = NA)
 
 for(i in 1:length(dispV)){
 	for(j in 1:3){
-		ED_totaldata$Mean_Regional1stDebtTime[ED_totaldata$Dispersal==dispV[i] & 
-		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$Mean_Regional1stDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata$Mean_FirstDebtTime[ED_totaldata$Dispersal==dispV[i] & 
+		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$Mean_FirstDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata$SD_Regional1stDebtTime[ED_totaldata$Dispersal==dispV[i] & 
-		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$SD_Regional1stDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata$SD_FirstDebtTime[ED_totaldata$Dispersal==dispV[i] & 
+		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$SD_FirstDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
 		ED_totaldata$Mean_RegionallastDebtTime[ED_totaldata$Dispersal==dispV[i] & 
 		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$Mean_RegionallastDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
@@ -355,13 +351,13 @@ for(i in 1:length(dispV)){
 		ED_totaldata$SD_RegionallastDebtTime[ED_totaldata$Dispersal==dispV[i] & 
 		    ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$SD_RegionallastDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata$Mean_RegionalSRLoss[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$Mean_R_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata$Mean_RegionalSRLoss[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$Mean_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata$SD_RegionalSRLoss[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$SD_R_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata$SD_RegionalSRLoss[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_regionaldata_total$SD_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata$Mean_Local1stDebtTime[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_localdata_summd2$Mean_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
+		ED_totaldata$Mean_LocalFirstDebtTime[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_localdata_summd2$Mean_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
-		ED_totaldata$SD_Local1stDebtTime[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_localdata_summd2$SD_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
+		ED_totaldata$SD_LocalFirstDebtTime[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_localdata_summd2$SD_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
 		ED_totaldata$Mean_LocallastDebtTime[ED_totaldata$Dispersal==dispV[i] & ED_totaldata$Patch_remove==removeV[j]]<-ED_localdata_summd2$Mean_LocallastDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
@@ -374,25 +370,28 @@ for(i in 1:length(dispV)){
 	}
 }
 
-ED_totaldata2<-data.frame(Dispersal=rep(dispV,each=(numCom*2)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*(numCom)*2),Scale=rep(c("Local","Regional"),each=numCom), Patches=c(numCom:1),Mean_1stDebtTime = NA, Mean_lastDebtTime = NA, SD_1stDebtTime = NA, Mean_SRLoss=NA, SD_SRLoss = NA)
+ED_totaldata2<-data.frame(Dispersal=rep(dispV,each=(numCom*2)),
+  Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*(numCom)*2),
+  Scale=rep(c("Local","Regional"),each=numCom), Patches=c(numCom:1),Mean_FirstDebtTime = NA, Mean_lastDebtTime = NA, 
+  SD_FirstDebtTime = NA, Mean_SRLoss=NA, SD_SRLoss = NA)
 
 for(i in 1:length(dispV)){
 	for(j in 1:3){
-		ED_totaldata2$Mean_1stDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$Mean_Regional1stDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata2$Mean_FirstDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$Mean_FirstDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata2$SD_1stDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$SD_Regional1stDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata2$SD_FirstDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$SD_FirstDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
 		ED_totaldata2$Mean_lastDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$Mean_RegionallastDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
 		ED_totaldata2$SD_lastDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$SD_RegionallastDebtTime[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata2$Mean_SRLoss[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$Mean_R_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata2$Mean_SRLoss[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$Mean_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata2$SD_SRLoss[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$SD_R_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
+		ED_totaldata2$SD_SRLoss[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Regional"]<-ED_regionaldata_total$SD_SRLoss[ED_regionaldata_total$Dispersal==dispV[i] & ED_regionaldata_total$Patch_remove==removeV[j]]
 		
-		ED_totaldata2$Mean_1stDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Local"]<-ED_localdata_summd2$Mean_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
+		ED_totaldata2$Mean_FirstDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Local"]<-ED_localdata_summd2$Mean_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
-		ED_totaldata2$SD_1stDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Local"]<-ED_localdata_summd2$SD_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
+		ED_totaldata2$SD_FirstDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Local"]<-ED_localdata_summd2$SD_Local1stDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
 		ED_totaldata2$Mean_lastDebtTime[ED_totaldata2$Dispersal==dispV[i] & ED_totaldata2$Patch_remove==removeV[j] & ED_totaldata2$Scale=="Local"]<-ED_localdata_summd2$Mean_LocallastDebt2[ED_localdata_summd2$Dispersal==dispV[i] & ED_localdata_summd2$Patch_remove==removeV[j]]
 		
