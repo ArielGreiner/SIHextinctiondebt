@@ -8,14 +8,14 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-1
+reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-9
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
-dispV <- 0.005
-#dispV<- c(0.0005,0.005,0.015)
+#dispV <- 0.005
+dispV<- c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -29,7 +29,7 @@ Ext<- 0.1 #extinction Threshold
 ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
-drop_length<-ePeriod
+drop_length<-ePeriod*2 
 
 Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tdata<- seq(1, Tmax)
@@ -247,13 +247,13 @@ for(r in 1:reps){
       #Extinction Debt Things      
       
 #need to change the '20' to something else if change the time interval b/w patch deletions
-R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=20))
+R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
 
 R_debt<-R_SR.df%>%
   group_by(Patches)%>%
   summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR>=first(R_SR)),Loss=first(R_SR)-last(R_SR))
   
-R_debt$Debt_t[R_debt$Debt_t==20]<-NA
+R_debt$Debt_t[R_debt$Debt_t==(drop_length/2000)]<-NA
 
 ED_data$FirstDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale == "Regional"]<-R_debt$Debt_t
 
@@ -261,7 +261,7 @@ R_lastdebt<-R_SR.df%>%
   group_by(Patches)%>%
   summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
   
-R_lastdebt$Debt_t[R_lastdebt$Debt_t==20]<-0
+R_lastdebt$Debt_t[R_lastdebt$Debt_t==(drop_length/2000)]<-0
 
 ED_data$FirstDebtTime[ED_data$Rep==r & 
    ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Debt_t
@@ -275,7 +275,7 @@ ED_data$Patches[ED_data$Rep==r &
 ED_data$SRLoss[ED_data$Rep==r & 
    ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Loss
 
-L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=20))
+L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=drop_length/2000))
 
 debt.f<-function(x){sum(x>=first(x))}
 
@@ -296,9 +296,9 @@ L_loss<-L_SR.df%>%
   summarise_each(funs(loss.f))
 
 L_SR.df<-gather(L_debt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
-L_SR.df$Debt_t[L_SR.df$Debt_t==20]<-NA
+L_SR.df$Debt_t[L_SR.df$Debt_t==(drop_length/2000)]<-NA
 L_SRlast.df<-gather(L_lastdebt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
-L_SRlast.df$Debt_t[L_SRlast.df$Debt_t==20]<-0
+L_SRlast.df$Debt_t[L_SRlast.df$Debt_t==drop_length/2000]<-0
 L_loss2<-gather(L_loss,key = Patch, value=Loss, L_SR.V1:L_SR.V30)
 L_SR.df$LastDebt <- L_SRlast.df$Debt_t
 L_SR.df$SRLoss <- L_loss2$Loss
@@ -338,9 +338,19 @@ ED_data_summarized<-summarise(group_by(ED_data, Dispersal, Patch_remove, Patches
 
 require(ggplot2)
 #number of species lost vs time until last extinction plot
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale),alpha=0.1)+
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal, Rep),fill=Scale),alpha=0.1)+
   geom_point()+ 
   geom_line()+
+  facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+ggplot(ED_data_summarized,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha=0.1))+
+  geom_point()+ 
+  #geom_line()+
+  #stat_smooth()+
+  geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
   facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   theme_bw(base_size = 18)+ #gets rid of grey background
