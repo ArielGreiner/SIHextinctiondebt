@@ -249,6 +249,8 @@ for(r in 1:reps){
 #need to change the '20' to something else if change the time interval b/w patch deletions
 R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
 
+#need a data frame to hold the data from each time step
+
 R_debt<-R_SR.df%>%
   group_by(Patches)%>%
   summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR>=first(R_SR)),Loss=first(R_SR)-last(R_SR))
@@ -276,6 +278,22 @@ ED_data$SRLoss[ED_data$Rep==r &
    ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Loss
 
 L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=drop_length/2000))
+
+LocalSR_timestep <- L_SR.df
+
+p = 0
+for(o in 1:(Tmax/2000)-50){
+  for(s in 1:30){
+  if(o == 20*p){
+    p = p + 1
+    #SRref <- LocalSR_timestep$L_SR.Vs[o] where s is the patch number...argh
+  }
+  if(LocalSR_timestep$L_SR.Vs[o] < SRref){ #again, s is supposed to be the patch number
+    #record 'o' and # of species lost at this time point
+  }  
+    
+  }
+}
 
 debt.f<-function(x){sum(x>=first(x))}
 
@@ -349,8 +367,8 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, 
 ggplot(ED_data_summarized,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha=0.1))+
   geom_point()+ 
   #geom_line()+
-  #stat_smooth()+
-  geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
+  stat_smooth(method = 'lm', formula = y ~ poly(x,2))
+  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
   facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   theme_bw(base_size = 18)+ #gets rid of grey background
