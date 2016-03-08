@@ -11,7 +11,7 @@ require(data.table)
 reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
-nSpecies<-9
+nSpecies<-15
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
 #dispV <- 0.005
@@ -281,19 +281,22 @@ L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1
 
 LocalSR_timestep <- L_SR.df
 
-p = 0
-for(o in 1:(Tmax/2000)-50){
-  for(s in 1:30){
-  if(o == 20*p){
-    p = p + 1
-    #SRref <- LocalSR_timestep$L_SR.Vs[o] where s is the patch number...argh
-  }
-  if(LocalSR_timestep$L_SR.Vs[o] < SRref){ #again, s is supposed to be the patch number
-    #record 'o' and # of species lost at this time point
-  }  
-    
-  }
+ETime.df <- data.frame(Species = rep(1:nSpecies, each = numCom), Patches = rep(1:numCom), TimeStep = NA)
+           
+
+Ext_Time <- function(x){temp <- max(which(x>0))+1
+if(temp==min(which(is.na(x)))){
+  temp <- NA
+} 
+return(temp)
 }
+
+
+for(o in 1:nSpecies){
+  ETime.df$TimeStep[ETime.df$Species==o] <- apply(Abund[,o,],1,Ext_Time)
+  
+}
+
 
 debt.f<-function(x){sum(x>=first(x))}
 
@@ -364,15 +367,6 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, 
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-ggplot(ED_data_summarized,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha=0.1))+
-  geom_point()+ 
-  #geom_line()+
-  stat_smooth(method = 'lm', formula = y ~ poly(x,2))
-  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
-  facet_grid(Dispersal~Patch_remove,scale="free")+
-  #facet_grid(Scale~Patch_remove,scale="free")+
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #regional faunal decay plot
 plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by = 20),col=3,lty=3), xlab = "Time Step", ylab = "Number of Species")
