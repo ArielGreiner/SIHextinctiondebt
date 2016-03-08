@@ -44,6 +44,9 @@ Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(di
 ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
   Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*2),
   Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
+ETime_Localdata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*numCom*nSpecies),
+  Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
+  Species = rep(1:nSpecies, each = numCom*length(dispV)*length(removeV)), Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -281,22 +284,18 @@ L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1
 
 LocalSR_timestep <- L_SR.df
 
-ETime.df <- data.frame(Species = rep(1:nSpecies, each = numCom), Patches = rep(1:numCom), TimeStep = NA)
-           
-
+#keeping track of when each species goes extinct for the last time, in each patch
+#ETime.df <- data.frame(Species = rep(1:nSpecies, each = numCom), Patches = rep(1:numCom), TimeStep = NA)
 Ext_Time <- function(x){temp <- max(which(x>0))+1
 if(temp==min(which(is.na(x)))){
   temp <- NA
 } 
 return(temp)
 }
-
-
 for(o in 1:nSpecies){
-  ETime.df$TimeStep[ETime.df$Species==o] <- apply(Abund[,o,],1,Ext_Time)
-  
+  #ETime.df$TimeStep[ETime.df$Species==o] <- apply(Abund[,o,],1,Ext_Time)
+  ETime_Localdata$TimeStep[ETime_Localdata$Rep == r & ETime_Localdata$Dispersal==dispV[i] & ETime_Localdata$Patch_remove==removeV[j] & ETime_Localdata$Species == o] <- apply(Abund[,o,],1,Ext_Time)
 }
-
 
 debt.f<-function(x){sum(x>=first(x))}
 
