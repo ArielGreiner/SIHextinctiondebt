@@ -415,4 +415,41 @@ plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by =
   	}
   }
 
+#getting rid of the data points that I called '-1' up above in the histogram
+ETime2.df <- ETime.df
+ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$TimeStep == -1] <- NA
+
+#histogram - need to reset ylim each time, set so that there is a bar for every time step  
+par(mfrow=c(length(removeV),length(dispV)))
+for(w in 1:length(removeV)){
+  for(o in 1:length(dispV)){
+   hist(ETime2.df$TimeStep[ETime2.df$Scale == "Regional" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w]], 
+        xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,1200), breaks = 0:1201,ylim = c(0,6))
+   abline(v=seq(0,1200, by = 40),col=3,lty=3)
+                                                                                        
+  }
+}
+
+
+###Odd foray into box plots that didn't really work###
+#makes the boxes transparent (the last 2 digits of the hex code define the level of transparency)
+stripchart(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
+  ylab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]),
+  col=c("light blue"), vertical = TRUE, pch = 19)
+  #col=c("pink","light blue","pink","light blue","pink","light blue"), vertical = TRUE, pch = 19)
+boxplot(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
+  ylab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]), 
+  col=c("light blue"), vertical = TRUE, pch = 19)
+  #col=c("#FF003322","#9AC0CD22","#FF003322","#9AC0CD22","#FF003322","#9AC0CD22"), add = TRUE)
+
+par(mfrow=c(length(removeV),length(dispV)))
+for(w in 1:length(removeV)){
+  for(o in 1:length(dispV)){
+stripchart(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
+  xlab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]),
+  col=c("light blue"), vertical = FALSE, pch = 19)
+                                                                                        
+  }
+}
+
 
