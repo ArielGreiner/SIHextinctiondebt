@@ -47,6 +47,10 @@ ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=r
 ETime_Localdata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*numCom*nSpecies),
   Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
   Species = rep(1:nSpecies, each = numCom*length(dispV)*length(removeV)), Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
+ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
+  Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
+  Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
+
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -246,13 +250,19 @@ for(r in 1:reps){
       Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
       
       Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
-      
-      #Extinction Debt Things      
-      
-#need to change the '20' to something else if change the time interval b/w patch deletions
-R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
 
-#need a data frame to hold the data from each time step
+##need to replace temp with a dataframe, temp right now gives the timestep at which a particular species goes extinct regionally    
+
+#ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
+  #Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
+  #Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)      
+      
+for(o in 1:nSpecies){
+  ETime_Regionaldata$TimeStep[ETime_Regionaldata$Rep==r & ETime_Regionaldata$Dispersal==dispV[i] & ETime_Regionaldata$Patch_remove==removeV[j] & ETime_Regionaldata$Species==o]<- max(which((apply(Abund,3,colSums, na.rm=T)>0)[o,]))
+}
+
+#Extinction Debt Things      
+R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
 
 R_debt<-R_SR.df%>%
   group_by(Patches)%>%
