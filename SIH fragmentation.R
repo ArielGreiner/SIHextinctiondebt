@@ -370,12 +370,14 @@ require(ggplot2)
 #number of species lost vs time until last extinction plot
 ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal, Rep),fill=Scale),alpha=0.1)+
   geom_point()+ 
-  geom_line()+
+  #geom_line()+
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
+  stat_smooth(method = 'lm')+
+  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
   facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
-
 
 #regional faunal decay plot
 plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by = 20),col=3,lty=3), xlab = "Time Step", ylab = "Number of Species")
