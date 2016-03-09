@@ -8,7 +8,7 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-5
+reps<-1
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-15
@@ -52,8 +52,8 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
   Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
 #keeping track of local biomass...
-L_Bmass_sep <- array(data = NA, dim = c(3,numCom*(drop_length/2000),numCom))
-L_Bmass <- array(data = NA, dim = c(3,numCom*(drop_length/2000)))
+L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
+L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -219,9 +219,9 @@ for(r in 1:reps){
           R0<-R0[-patch.delete]
         }  
       } 
-      ####need to fix this region
-      L_Bmass[j,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
-      L_Bmass_sep[j,,]<-data.frame(t(apply(Abund,3,rowSums)))
+
+      L_Bmass[j,i,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
+      L_Bmass_sep[j,i,,]<-data.frame(t(apply(Abund,3,rowSums)))
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums, na.rm=T))
