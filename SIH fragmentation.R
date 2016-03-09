@@ -29,7 +29,7 @@ Ext<- 0.1 #extinction Threshold
 ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
-drop_length<-ePeriod*2 
+drop_length<-ePeriod*4 
 
 Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tdata<- seq(1, Tmax)
