@@ -216,9 +216,9 @@ for(r in 1:reps){
           R0<-R0[-patch.delete]
         }  
       } 
-      
-      L_Bmass<-colMeans(apply(Abund,3,rowSums),na.rm=T)
-      L_Bmass_sep<-data.frame(t(apply(Abund,3,rowSums)))
+      ####need to fix this region
+      L_Bmass[j,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
+      L_Bmass_sep[j,,]<-data.frame(t(apply(Abund,3,rowSums)))
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums, na.rm=T))
@@ -297,7 +297,7 @@ LocalSR_timestep <- L_SR.df
 #keeping track of when each species goes extinct for the last time, in each patch
 #ETime.df <- data.frame(Species = rep(1:nSpecies, each = numCom), Patches = rep(1:numCom), TimeStep = NA)
 Ext_Time <- function(x){temp <- max(which(x>0))+1
-if(temp==min(which(is.na(x)))){
+if(temp==min(which(is.na(x)))){ #if the extinction time is when the patch is deleted, ignore this extinction
   temp <- NA
 } 
 return(temp)
@@ -382,6 +382,34 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, 
 #regional faunal decay plot
 plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by = 20),col=3,lty=3), xlab = "Time Step", ylab = "Number of Species")
 
-
+#the regional data file has -Inf if the species never appears in the community (only looking after the first 100k time steps), this is to replace
+#that with an NA
+  temp1 <- ETime_Regionaldata
+  temp1[temp1 == -Inf] <- NA
+  
+  temp2 <- ETime_Localdata
+  temp2[temp2 == -Inf] <- -1
+  
+  #summarize over all patches
+  temp2.1 <- summarise(group_by(temp2, Dispersal, Patch_remove, Rep, Species), 
+  Mean_TimeStep=mean(TimeStep,na.rm=T), SD_TimeStep=sd(TimeStep,na.rm=T))
+  
+  ETime.df <- data.frame(Dispersal=rep(dispV, each = length(removeV)*2*reps),
+    Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each=2*reps),
+    Scale=rep(c("Local","Regional"), each = reps), Rep = rep(1:reps),Species = rep(1:nSpecies, each = length(dispV)*length(removeV)*2*reps), 
+    TimeStep = NA)
+  
+  #sorry Patrick
+  for(o in 1:length(dispV)){
+  	for(w in 1:length(removeV)){
+  		for(i in 1:nSpecies){
+  			for(j in 1:reps){
+  				ETime.df$TimeStep[ETime.df$Scale == "Regional" & ETime.df$Dispersal == dispV[o] & ETime.df$Patch_remove == removeV[w] & ETime.df$Species == i & ETime.df$Rep == j] <- temp1$TimeStep[temp1$Dispersal == dispV[o] & temp1$Patch_remove == removeV[w] & temp1$Species == i & temp1$Rep == j]
+  				
+  				ETime.df$TimeStep[ETime.df$Scale == "Local" & ETime.df$Dispersal == dispV[o] & ETime.df$Patch_remove == removeV[w] & ETime.df$Species == i & ETime.df$Rep == j] <- temp2.1$Mean_TimeStep[temp2.1$Dispersal == dispV[o] & temp2.1$Patch_remove == removeV[w] & temp2.1$Species == i & temp2.1$Rep == j]
+  			}
+  		}	
+  	}
+  }
 
 
