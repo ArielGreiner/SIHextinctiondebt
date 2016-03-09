@@ -51,6 +51,9 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
   Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
   Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
+#keeping track of local biomass...
+L_Bmass_sep <- array(data = NA, dim = c(3,numCom*(drop_length/2000),numCom))
+L_Bmass <- array(data = NA, dim = c(3,numCom*(drop_length/2000)))
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
