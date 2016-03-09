@@ -8,7 +8,7 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-1
+reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-15
