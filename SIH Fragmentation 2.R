@@ -8,7 +8,7 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-5
+reps<-1
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-15
@@ -33,7 +33,7 @@ eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 debtcollect_time <- 400000
 
 #Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
-Tmax<-100000+2000+debtcollect_time #+2000 added to ensure that the first sample taken is of the intact network
+Tmax<-100000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
 Tdata<- seq(1, Tmax)
 DT<- 0.08 # % size of discrete "time steps"
 sampleV<-seq(102000,Tmax,by=2000) #this ensures that the first sample taken is of the intact network
@@ -43,6 +43,7 @@ Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 #Extinction Debt data frames
+
 #ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
                    # Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*2),
                     #Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
@@ -114,7 +115,7 @@ for(r in 1:reps){
             Rt0 <- DT*rInput+R0*(1-DT*(rLoss + rowSums(consume*N0)))
           }
         
-        if(sum(TS==sampleV)==1){
+        if(sum(TS==sampleV)==1){ #sampling every time
           sample_id<-which(TS==sampleV)
           Components$Number_components[sample_id]<-components(weightedgraph)$no
           Components$Component_size[sample_id]<-mean(components(weightedgraph)$csize)
@@ -195,7 +196,7 @@ for(r in 1:reps){
             Species_data[sample_id,,1]<-colSums(N)
             Species_data[sample_id,,2]<-colSums(N>0)
           }
-        } #sample for the first time, before any patches get deleted
+        } 
         
         N <- Nt * (Nt>Ext) # set to 0 if below extinction threshold
         R <- Rt
@@ -204,22 +205,22 @@ for(r in 1:reps){
         R0 <- Rt0
         
         #if(max(TS==seq(100000+drop_length,Tmax-1,by=drop_length))){
-        if(TS == 102000){
+        if(TS == 140000){
           
-          for(o in 1:5){ #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
+          #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
           if(j==1){btw<-betweenness(weightedgraph)
           if(sum(btw==0)){
-            patch.delete<-order(degree(weightedgraph),decreasing = T)[1]
-          } else{patch.delete<-order(btw,decreasing = T)[1] }
+            patch.delete<-order(degree(weightedgraph),decreasing = T)[1:5]
+          } else{patch.delete<-order(btw,decreasing = T)[1:5] }
           } else{
-            if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1]} else{
-              patch.delete<-sample(nrow(N),1)}}    
+            if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1:5]} else{
+              patch.delete<-sample(nrow(N),5)}}    
           weightedgraph<-delete.vertices(weightedgraph,patch.delete)
           d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
           d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
           dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
           dispersal_matrix[is.nan(dispersal_matrix)]<-0
-          }
+          
           
           if(print.plots==T){
             if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1))} else{plot(weightedgraph)}}
@@ -247,26 +248,26 @@ for(r in 1:reps){
      # L_CV<-rowMeans(CVdf[,2:31],na.rm=T)
       #R_CV<-CVdf$R_Bmass
       
-      SIH_data_means<-data.frame(R_SR=R_SR,L_SR=L_SR,L_Bmass=L_Bmass,Patches=numCom-colMeans(apply(is.na(Abund),3,colSums))) %>%
-        group_by(Patches) %>%
-        summarise_each(funs(mean))
-      SIH_data_means$R_CV<-R_CV
-      SIH_data_means$L_CV<-L_CV
-      
+      # SIH_data_means<-data.frame(R_SR=R_SR,L_SR=L_SR,L_Bmass=L_Bmass,Patches=numCom-colMeans(apply(is.na(Abund),3,colSums))) %>%
+      #   group_by(Patches) %>%
+      #   summarise_each(funs(mean))
+      # SIH_data_means$R_CV <- NA #R_CV
+      # SIH_data_means$L_CV<-NA #L_CV
+      # 
       Component_data_means<-data.frame(Patches=numCom-colMeans(apply(is.na(Abund),3,colSums)),Component_num=Components$Number_components,Component_size=Components$Component_size,Component_range=Components$Component_envt_range)%>%
         group_by(Patches) %>%
         summarise_each(funs(mean))
-      
-      SIH_data_reps[SIH_data_reps$Rep==r & SIH_data_reps$Dispersal==dispV[i] & 
-                      SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-SIH_data_means
-      Component_data_reps[SIH_data_reps$Rep==r & 
+      # 
+      # SIH_data_reps[SIH_data_reps$Rep==r & SIH_data_reps$Dispersal==dispV[i] & 
+      #                 SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-SIH_data_means
+      Component_data_reps[SIH_data_reps$Rep==r &
                             SIH_data_reps$Dispersal==dispV[i] & SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-Component_data_means
-      
-      mean.df<-summarise(group_by(Meta_dyn,Patches),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
-      Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
-      
-      Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
-      
+
+      # mean.df<-summarise(group_by(Meta_dyn,Patches),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
+      # Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
+      # 
+      # Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
+      # 
       ##need to replace temp with a dataframe, temp right now gives the timestep at which a particular species goes extinct regionally    
       
       #ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
