@@ -51,9 +51,11 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
   Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
   Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
-#keeping track of local biomass...
-L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
-L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
+#for species richness over time plots - can't accommodate multiple replicates or multiple dispersal levels atm...
+SR_overtime <- array(data = NA, dim = c(3, 2400))
+#keeping track of local biomass...(these didn't work)
+#L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
+#L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
 
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -219,9 +221,11 @@ for(r in 1:reps){
           R0<-R0[-patch.delete]
         }  
       } 
-
-      L_Bmass[j,i,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
-      L_Bmass_sep[j,i,,]<-data.frame(t(apply(Abund,3,rowSums)))
+    #the arrays didn't work, possible that they were too big
+      #L_Bmass[j,i,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
+      #L_Bmass_sep[j,i,,]<-data.frame(t(apply(Abund,3,rowSums)))
+      L_Bmass<-colMeans(apply(Abund,3,rowSums),na.rm=T)
+      L_Bmass_sep<-data.frame(t(apply(Abund,3,rowSums)))
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums, na.rm=T))
@@ -354,6 +358,8 @@ ED_data$LastDebtTime[ED_data$Rep==r &
 ED_data$SRLoss[ED_data$Rep==r & 
    ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
 
+#for species richness over time plots
+SR_overtime[j,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
