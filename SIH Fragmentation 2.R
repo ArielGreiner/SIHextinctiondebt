@@ -29,21 +29,24 @@ Ext<- 0.1 #extinction Threshold
 ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
-drop_length<-ePeriod*4 
+#drop_length<-ePeriod*4 #old version
+debtcollect_time <- 400000
 
-Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
+#Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
+Tmax<-100000+2000+debtcollect_time #+2000 added to ensure that the first sample taken is of the intact network
 Tdata<- seq(1, Tmax)
 DT<- 0.08 # % size of discrete "time steps"
-sampleV<-seq(102000,Tmax,by=2000)
+sampleV<-seq(102000,Tmax,by=2000) #this ensures that the first sample taken is of the intact network
 removeV<-c("Max betweenness","Min betweenness","Random")
 
 Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 #Extinction Debt data frames
-ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
-                    Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*2),
-                    Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
+#ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
+                   # Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*2),
+                    #Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
+
 ETime_Localdata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*numCom*nSpecies),
                             Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
                             Species = rep(1:nSpecies, each = numCom*length(dispV)*length(removeV)), Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
@@ -192,7 +195,7 @@ for(r in 1:reps){
             Species_data[sample_id,,1]<-colSums(N)
             Species_data[sample_id,,2]<-colSums(N>0)
           }
-        }
+        } #sample for the first time, before any patches get deleted
         
         N <- Nt * (Nt>Ext) # set to 0 if below extinction threshold
         R <- Rt
@@ -200,7 +203,10 @@ for(r in 1:reps){
         N0 <- Nt0 * (Nt0>Ext) # set to 0 if below extinction threshold
         R0 <- Rt0
         
-        if(max(TS==seq(100000+drop_length,Tmax-1,by=drop_length))){
+        #if(max(TS==seq(100000+drop_length,Tmax-1,by=drop_length))){
+        if(TS == 102000){
+          
+          for(o in 1:5){ #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
           if(j==1){btw<-betweenness(weightedgraph)
           if(sum(btw==0)){
             patch.delete<-order(degree(weightedgraph),decreasing = T)[1]
@@ -213,6 +219,8 @@ for(r in 1:reps){
           d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
           dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
           dispersal_matrix[is.nan(dispersal_matrix)]<-0
+          }
+          
           if(print.plots==T){
             if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1))} else{plot(weightedgraph)}}
           N<-N[-patch.delete,]
@@ -232,11 +240,12 @@ for(r in 1:reps){
       
       cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
       
-      CVdf<-cbind(L_Bmass_sep,data.frame(R_Bmass=R_Bmass,Patches=rep(30:1,each=drop_length/2000))) %>%
-        group_by(Patches) %>%
-        summarise_each(funs(cv))
-      L_CV<-rowMeans(CVdf[,2:31],na.rm=T)
-      R_CV<-CVdf$R_Bmass
+      #commented out the section below because set drop_length = 0 and so I believe that I would get an error message, fix if necessary later
+      #CVdf<-cbind(L_Bmass_sep,data.frame(R_Bmass=R_Bmass,Patches=rep(30:1,each=drop_length/2000))) %>%
+        #group_by(Patches) %>%
+        #summarise_each(funs(cv))
+     # L_CV<-rowMeans(CVdf[,2:31],na.rm=T)
+      #R_CV<-CVdf$R_Bmass
       
       SIH_data_means<-data.frame(R_SR=R_SR,L_SR=L_SR,L_Bmass=L_Bmass,Patches=numCom-colMeans(apply(is.na(Abund),3,colSums))) %>%
         group_by(Patches) %>%
@@ -268,36 +277,39 @@ for(r in 1:reps){
         ETime_Regionaldata$TimeStep[ETime_Regionaldata$Rep==r & ETime_Regionaldata$Dispersal==dispV[i] & ETime_Regionaldata$Patch_remove==removeV[j] & ETime_Regionaldata$Species==o]<- max(which((apply(Abund,3,colSums, na.rm=T)>0)[o,]))
       }
       
-      #Extinction Debt Things      
-      R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
+      #Extinction Debt Things 
+      ##Code commented out under here no longer makes sense, as would only have one data point for first + last debt time now
+      #R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums, na.rm=T)>0),Patches=rep(30:1,each=drop_length/2000))
       
-      R_debt<-R_SR.df%>%
-        group_by(Patches)%>%
-        summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR>=first(R_SR)),Loss=first(R_SR)-last(R_SR))
+      #R_debt<-R_SR.df%>%
+        #group_by(Patches)%>%
+        #summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR>=first(R_SR)),Loss=first(R_SR)-last(R_SR))
       
-      R_debt$Debt_t[R_debt$Debt_t==(drop_length/2000)]<-NA
+      #R_debt$Debt_t[R_debt$Debt_t==(drop_length/2000)]<-NA
       
-      ED_data$FirstDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale == "Regional"]<-R_debt$Debt_t
+      #ED_data$FirstDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale == "Regional"]<-R_debt$Debt_t
       
-      R_lastdebt<-R_SR.df%>%
-        group_by(Patches)%>%
-        summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
+      #R_lastdebt<-R_SR.df%>%
+        #group_by(Patches)%>%
+        #summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
       
-      R_lastdebt$Debt_t[R_lastdebt$Debt_t==(drop_length/2000)]<-0
+      #R_lastdebt$Debt_t[R_lastdebt$Debt_t==(drop_length/2000)]<-0
       
-      ED_data$FirstDebtTime[ED_data$Rep==r & 
-                              ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Debt_t
+      #ED_data$FirstDebtTime[ED_data$Rep==r & 
+                              #ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Debt_t
       
-      ED_data$LastDebtTime[ED_data$Rep==r & 
-                             ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Debt_t
+      #ED_data$LastDebtTime[ED_data$Rep==r & 
+                             #ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Debt_t
       
-      ED_data$Patches[ED_data$Rep==r & 
-                        ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j]]<-c(30:1)
+     #ED_data$Patches[ED_data$Rep==r & 
+                        #ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j]]<-c(30:1)
       
-      ED_data$SRLoss[ED_data$Rep==r & 
-                       ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Loss
+      #ED_data$SRLoss[ED_data$Rep==r & 
+                       #ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_debt$Loss
       
-      L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=drop_length/2000))
+      
+      #L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)),Patches=rep(30:1,each=drop_length/2000))
+      L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
       
       LocalSR_timestep <- L_SR.df
       
@@ -314,34 +326,34 @@ for(r in 1:reps){
         ETime_Localdata$TimeStep[ETime_Localdata$Rep == r & ETime_Localdata$Dispersal==dispV[i] & ETime_Localdata$Patch_remove==removeV[j] & ETime_Localdata$Species == o] <- apply(Abund[,o,],1,Ext_Time)
       }
       
-      debt.f<-function(x){sum(x>=first(x))}
+      #debt.f<-function(x){sum(x>=first(x))}
       
-      L_debt<-L_SR.df%>%
-        group_by(Patches)%>%
-        summarise_each(funs(debt.f))
+      #L_debt<-L_SR.df%>%
+        #group_by(Patches)%>%
+       # summarise_each(funs(debt.f))
       
-      ldebt.f<-function(x){sum(x!=last(x))}
+      #ldebt.f<-function(x){sum(x!=last(x))}
       
-      L_lastdebt<-L_SR.df%>%
-        group_by(Patches)%>%
-        summarise_each(funs(ldebt.f))
+      #L_lastdebt<-L_SR.df%>%
+      #  group_by(Patches)%>%
+      #  summarise_each(funs(ldebt.f))
       
-      loss.f<-function(x){sum(first(x)-last(x))}
+      #loss.f<-function(x){sum(first(x)-last(x))}
       
-      L_loss<-L_SR.df%>%
-        group_by(Patches)%>%
-        summarise_each(funs(loss.f))
+      #L_loss<-L_SR.df%>%
+       # group_by(Patches)%>%
+       # summarise_each(funs(loss.f))
       
-      L_SR.df<-gather(L_debt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
-      L_SR.df$Debt_t[L_SR.df$Debt_t==(drop_length/2000)]<-NA
-      L_SRlast.df<-gather(L_lastdebt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
-      L_SRlast.df$Debt_t[L_SRlast.df$Debt_t==drop_length/2000]<-0
-      L_loss2<-gather(L_loss,key = Patch, value=Loss, L_SR.V1:L_SR.V30)
-      L_SR.df$LastDebt <- L_SRlast.df$Debt_t
-      L_SR.df$SRLoss <- L_loss2$Loss
+      #L_SR.df<-gather(L_debt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
+      #L_SR.df$Debt_t[L_SR.df$Debt_t==(drop_length/2000)]<-NA
+      #L_SRlast.df<-gather(L_lastdebt,key = Patch,value=Debt_t,L_SR.V1:L_SR.V30) #wide -> long format
+      #L_SRlast.df$Debt_t[L_SRlast.df$Debt_t==drop_length/2000]<-0
+      #L_loss2<-gather(L_loss,key = Patch, value=Loss, L_SR.V1:L_SR.V30)
+      #L_SR.df$LastDebt <- L_SRlast.df$Debt_t
+      ##L_SR.df$SRLoss <- L_loss2$Loss
       #above: created data frame with SR Loss, Last Debt Time and First Debt Time, separated by patch
-      LocalSum<-summarise(group_by(L_SR.df, Patches), Mean_LocalFirstDebt=mean(Debt_t,na.rm=T), 
-                          Mean_LocalLastDebt=mean(LastDebt,na.rm=T), Mean_LocalSRLoss=mean(SRLoss,na.rm=T))
+      #LocalSum<-summarise(group_by(L_SR.df, Patches), Mean_LocalFirstDebt=mean(Debt_t,na.rm=T), 
+                          #Mean_LocalLastDebt=mean(LastDebt,na.rm=T), Mean_LocalSRLoss=mean(SRLoss,na.rm=T))
       
       #copy of the framework of the big dataframe included below for clarity
       #ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
@@ -349,14 +361,14 @@ for(r in 1:reps){
       #Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
       
       #below: adds the local, mean data to the big data frame.
-      ED_data$FirstDebtTime[ED_data$Rep==r & 
-                              ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalFirstDebt
+      #ED_data$FirstDebtTime[ED_data$Rep==r & 
+                              #ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalFirstDebt
       
-      ED_data$LastDebtTime[ED_data$Rep==r & 
-                             ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalLastDebt
+      #ED_data$LastDebtTime[ED_data$Rep==r & 
+                            # ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalLastDebt
       
-      ED_data$SRLoss[ED_data$Rep==r & 
-                       ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
+      #ED_data$SRLoss[ED_data$Rep==r & 
+                     #  ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
       
       #for species richness over time plots
       SR_overtime[j,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
@@ -371,22 +383,10 @@ for(r in 1:reps){
 #Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
 
 #if want to deal with the data not on a rep-by-rep basis
-ED_data_summarized<-summarise(group_by(ED_data, Dispersal, Patch_remove, Patches, Scale), 
-                              Mean_FirstDebtTime=mean(FirstDebtTime,na.rm=T), SD_FirstDebtTime=sd(FirstDebtTime,na.rm=T), Mean_LastDebtTime=mean(LastDebtTime,na.rm=T), 
-                              SD_LastDebtTime=sd(LastDebtTime,na.rm=T), Mean_SRLoss=mean(SRLoss, na.rm=T), SD_SRLoss=sd(SRLoss, na.rm=T))
+#ED_data_summarized<-summarise(group_by(ED_data, Dispersal, Patch_remove, Patches, Scale), 
+                              #Mean_FirstDebtTime=mean(FirstDebtTime,na.rm=T), SD_FirstDebtTime=sd(FirstDebtTime,na.rm=T), Mean_LastDebtTime=mean(LastDebtTime,na.rm=T), 
+                              #SD_LastDebtTime=sd(LastDebtTime,na.rm=T), Mean_SRLoss=mean(SRLoss, na.rm=T), SD_SRLoss=sd(SRLoss, na.rm=T))
 
-require(ggplot2)
-#number of species lost vs time until last extinction plot
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal, Rep),fill=Scale),alpha=0.1)+
-  geom_point()+ 
-  #geom_line()+
-  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
-  stat_smooth(method = 'lm')+
-  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
-  facet_grid(Dispersal~Patch_remove,scale="free")+
-  #facet_grid(Scale~Patch_remove,scale="free")+
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #regional faunal decay plot
 plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by = 20),col=3,lty=3), xlab = "Time Step", ylab = "Number of Species")
@@ -436,6 +436,17 @@ for(w in 1:length(removeV)){
   }
 }
 
+#will plot the local biomass of each individual patch for the last scenario run
+plot(L_Bmass_sep$X30, type = 'l')
+#7, 11, 18, 24, 30
+plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
+
+#will plot the local species richness, averaged across replicates, for the last replicate of each of the 3 patch removal scenarios on one graph as a line
+plot(SR_overtime[1,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue")
+lines(SR_overtime[2,],col="green", type='l')
+lines(SR_overtime[3,],col="red", type='l')
+
+
 
 ###Odd foray into box plots that didn't really work###
 #makes the boxes transparent (the last 2 digits of the hex code define the level of transparency)
@@ -457,5 +468,19 @@ for(w in 1:length(removeV)){
     
   }
 }
+
+#plot below here is no longer relevant, and if did want to use it again - would need to fix it so that the scale was the same for all of them
+require(ggplot2)
+#number of species lost vs time until last extinction plot
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal, Rep),fill=Scale),alpha=0.1)+
+  geom_point()+ 
+  #geom_line()+
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
+  stat_smooth(method = 'lm')+
+  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
+  facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
