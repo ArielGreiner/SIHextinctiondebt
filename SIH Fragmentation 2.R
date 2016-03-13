@@ -15,7 +15,7 @@ nSpecies<-15
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
 #dispV <- 0.005
-dispV<- c(0.0005,0.005,0.015)
+dispV<- c(0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
