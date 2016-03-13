@@ -56,7 +56,7 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
                                Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
 #for species richness over time plots - can't accommodate multiple replicates or multiple dispersal levels atm...
-#SR_overtime <- array(data = NA, dim = c(3, 2400))
+SR_overtime <- array(data = NA, dim = c(length(randomV), length(dispV), length(sampleV)))
 #keeping track of local biomass...(these didn't work)
 #L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
 #L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
@@ -372,7 +372,7 @@ for(r in 1:reps){
                      #  ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
       
       #for species richness over time plots
-      #SR_overtime[j,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
+      SR_overtime[j,i,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
@@ -435,7 +435,8 @@ par(mfrow=c(length(removeV),length(dispV)))
 for(w in 1:length(removeV)){
   for(o in 1:length(dispV)){
     hist(ETime2.df$TimeStep[ETime2.df$Scale == "Regional" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w]], 
-         xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,length(sampleV)+1), ylim = c(0,6))
+         xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,length(sampleV)+1), ylim = c(0,50),
+    breaks = seq(1,length(sampleV)+1, by = 20))
     
   }
 }
