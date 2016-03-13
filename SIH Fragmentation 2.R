@@ -56,7 +56,7 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
                                Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
 #for species richness over time plots - can't accommodate multiple replicates or multiple dispersal levels atm...
-SR_overtime <- array(data = NA, dim = c(length(randomV), length(dispV), length(sampleV)))
+SR_overtime <- array(data = NA, dim = c(length(removeV), length(dispV), length(sampleV)))
 #keeping track of local biomass...(these didn't work)
 #L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
 #L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
