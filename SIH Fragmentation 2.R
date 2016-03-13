@@ -8,14 +8,14 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-1
+reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 
 nSpecies<-15
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
 #dispV <- 0.005
-dispV<- c(0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -56,7 +56,7 @@ ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(remov
                                Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 
 #for species richness over time plots - can't accommodate multiple replicates or multiple dispersal levels atm...
-SR_overtime <- array(data = NA, dim = c(3, 2400))
+#SR_overtime <- array(data = NA, dim = c(3, 2400))
 #keeping track of local biomass...(these didn't work)
 #L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
 #L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
@@ -372,7 +372,7 @@ for(r in 1:reps){
                      #  ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
       
       #for species richness over time plots
-      SR_overtime[j,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
+      #SR_overtime[j,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
@@ -394,11 +394,15 @@ plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by =
 
 #the regional data file has -Inf if the species never appears in the community (only looking after the first 100k time steps), this is to replace
 #that with an NA
+#if regional data time to go extinct = 220, or local data time to go extinct = 221 - that means that the species doesn't go extinct during 
+#the elapsed time in the simulation
 temp1 <- ETime_Regionaldata
 temp1[temp1 == -Inf] <- NA
+temp1[temp1 == length(sampleV)] <- NA 
 
 temp2 <- ETime_Localdata
 temp2[temp2 == -Inf] <- -1
+temp2[temp2 == length(sampleV)+1] <- NA
 
 #summarize over all patches
 temp2.1 <- summarise(group_by(temp2, Dispersal, Patch_remove, Rep, Species), 
@@ -431,8 +435,7 @@ par(mfrow=c(length(removeV),length(dispV)))
 for(w in 1:length(removeV)){
   for(o in 1:length(dispV)){
     hist(ETime2.df$TimeStep[ETime2.df$Scale == "Regional" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w]], 
-         xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,1200), breaks = 0:1201,ylim = c(0,6))
-    abline(v=seq(0,1200, by = 40),col=3,lty=3)
+         xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,length(sampleV)+1), ylim = c(0,6))
     
   }
 }
