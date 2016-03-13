@@ -210,11 +210,11 @@ for(r in 1:reps){
           #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
           if(j==1){btw<-betweenness(weightedgraph)
           if(sum(btw==0)){
-            patch.delete<-order(degree(weightedgraph),decreasing = T)[1:5]
-          } else{patch.delete<-order(btw,decreasing = T)[1:5] }
+            patch.delete<-order(degree(weightedgraph),decreasing = T)[1:10]
+          } else{patch.delete<-order(btw,decreasing = T)[1:10] }
           } else{
-            if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1:5]} else{
-              patch.delete<-sample(nrow(N),5)}}    
+            if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1:10]} else{
+              patch.delete<-sample(nrow(N),10)}}    
           weightedgraph<-delete.vertices(weightedgraph,patch.delete)
           d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
           d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
