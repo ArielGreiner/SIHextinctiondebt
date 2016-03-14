@@ -54,9 +54,13 @@ ETime_Localdata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)
 ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
                                Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
                                Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
+SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
+        Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+        Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+        TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
 
 #for species richness over time plots - can't accommodate multiple replicates or multiple dispersal levels atm...
-SR_overtime <- array(data = NA, dim = c(length(removeV), length(dispV), length(sampleV)))
+  #SR_overtime <- array(data = NA, dim = c(length(randomV), length(dispV), length(sampleV)))
 #keeping track of local biomass...(these didn't work)
 #L_Bmass_sep <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000),numCom))
 #L_Bmass <- array(data = NA, dim = c(length(removeV),length(dispV),numCom*(drop_length/2000)))
@@ -372,7 +376,13 @@ for(r in 1:reps){
                      #  ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- LocalSum$Mean_LocalSRLoss
       
       #for species richness over time plots
-      SR_overtime[j,i,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
+      #SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
+        #Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+        #Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+        #TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
+      SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Regional"]<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
+      SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Local"]<-rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
+      #SR_overtime[j,i,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
@@ -439,6 +449,13 @@ for(w in 1:length(removeV)){
     breaks = seq(1,length(sampleV)+1, by = 20))
     
   }
+}
+
+par(mfrow=c(length(removeV),length(dispV)))
+  for(o in 1:length(dispV)){
+plot(SR_overtime[1,i,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue", main = paste("Dispersal Level", dispV[o]))
+lines(SR_overtime[2,i,],col="green", type='l')
+lines(SR_overtime[3,i,],col="red", type='l')
 }
 
 #will plot the local biomass of each individual patch for the last scenario run
