@@ -472,10 +472,13 @@ MeanExtTimeBin <- SR_Time %>%
     group_by(Dispersal, Patch_remove, Scale, TimeStepRound) %>%
     summarize(Mean_NumExt = mean(NumExt, na.rm = T), SD_NumExt = sd(NumExt, na.rm = T))
 
-ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale))+
+ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
   geom_line()+
-  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
+  #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1)+
   facet_grid(Dispersal~Patch_remove)+
+  xlab("Time Step")+
+  ylab("Mean Number of Extinctions")+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   geom_vline(x=20)+
@@ -528,6 +531,9 @@ ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale,
   #geom_point()+ 
   geom_line()+
   geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1)+
+  xlab("Time Step")+
+  ylab("Mean Species Richness")+
+  geom_vline(x=20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
