@@ -450,23 +450,90 @@ for(w in 1:length(removeV)){
     
   }
 }
+ETimeSum.df <- summarise(group_by(ETime2.df, Dispersal, Patch_remove, Species, Scale), Mean_TimeStep = mean(TimeStep, na.rm=T), SD_TimeStep = sd(TimeStep, na.rm = T))
 
 par(mfrow=c(length(removeV),length(dispV)))
+for(w in 1:length(removeV)){
   for(o in 1:length(dispV)){
-plot(SR_overtime[1,i,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue", main = paste("Dispersal Level", dispV[o]))
-lines(SR_overtime[2,i,],col="green", type='l')
-lines(SR_overtime[3,i,],col="red", type='l')
+    plot(ETimeSum.df$Mean_TimeStep[ETimeSum.df$Scale == "Regional" & ETimeSum.df$Dispersal == dispV[o] & ETimeSum.df$Patch_remove == removeV[w]], 
+         ylab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,nSpecies), ylim = c(0,length(sampleV)+5),
+         type = 'l')
+    
+  }
 }
+
+MeanExtTimeBin <- SR_Time %>%
+    group_by(Dispersal, Patch_remove, Scale, Rep) %>%
+    mutate(TimeStepRound = ceiling(TimeStep/5)) %>%
+    group_by(TimeStepRound,Dispersal,Patch_remove, Scale, Rep)%>%
+    summarize(Mean_SR = mean(SR, na.rm = T)) %>%
+    group_by(Dispersal,Patch_remove, Scale, Rep)%>%
+    mutate(NumExt = lag(Mean_SR) - Mean_SR) %>%
+    group_by(Dispersal, Patch_remove, Scale, TimeStepRound) %>%
+    summarize(Mean_NumExt = mean(NumExt, na.rm = T), SD_NumExt = sd(NumExt, na.rm = T))
+
+ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale))+
+  geom_line()+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  geom_vline(x=20)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#unbinned version of the above
+MeanExtTime <- SR_Time %>%
+  group_by(Dispersal, Patch_remove, Scale, Rep) %>%
+  mutate(NumExt = lag(SR) - SR) %>%
+  group_by(Dispersal, Patch_remove, Scale, TimeStep) %>%
+  summarize(Mean_NumExt = mean(NumExt, na.rm = T))
+
+
+ggplot(MeanExtTime,aes(x=TimeStep,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale))+
+  geom_line()+
+  #geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1,alpha = 0.1)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+
+  
+
+         
+
+#cut(ETime2.df$TimeStep, breaks = 0:length(sampleV))
+#.bincode
+
+#will plot the local species richness, averaged across replicates, for the last replicate of each of the 3 patch removal scenarios on one graph as a line
+#par(mfrow=c(length(removeV),length(dispV)))
+ # for(o in 1:length(dispV)){
+#plot(SR_overtime[1,i,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue", main = paste("Dispersal Level", dispV[o]))
+#lines(SR_overtime[2,i,],col="green", type='l')
+#lines(SR_overtime[3,i,],col="red", type='l')
+#}
 
 #will plot the local biomass of each individual patch for the last scenario run
 plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
 plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
 
-#will plot the local species richness, averaged across replicates, for the last replicate of each of the 3 patch removal scenarios on one graph as a line
-plot(SR_overtime[1,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue")
-lines(SR_overtime[2,],col="green", type='l')
-lines(SR_overtime[3,],col="red", type='l')
+SRTimeSummd <- summarise(group_by(SR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
+
+require(ggplot2)
+#number of species lost vs time until last extinction plot
+ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
+  #geom_point()+ 
+  geom_line()+
+  geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 
 
 
@@ -506,20 +573,6 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
-
-SRTimeSummd <- summarise(group_by(SR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
-
-require(ggplot2)
-#number of species lost vs time until last extinction plot
-ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
-  #geom_point()+ 
-  geom_line()+
-  geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1)+
-  facet_grid(Dispersal~Patch_remove)+
-  #facet_grid(Dispersal~Patch_remove,scale="free")+
-  #facet_grid(Scale~Patch_remove,scale="free")+
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
                          
