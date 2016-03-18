@@ -33,10 +33,10 @@ eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 debtcollect_time <- 400000
 
 #Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
-Tmax<-100000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
+Tmax<-250000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
 Tdata<- seq(1, Tmax)
 DT<- 0.08 # % size of discrete "time steps"
-sampleV<-seq(102000,Tmax,by=2000) #this ensures that the first sample taken is of the intact network
+sampleV<-seq(252000,Tmax,by=2000) #this ensures that the first sample taken is of the intact network
 removeV<-c("Max betweenness","Min betweenness","Random")
 
 Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
@@ -208,8 +208,8 @@ for(r in 1:reps){
         N0 <- Nt0 * (Nt0>Ext) # set to 0 if below extinction threshold
         R0 <- Rt0
         
-        #if(max(TS==seq(100000+drop_length,Tmax-1,by=drop_length))){
-        if(TS == 140000){
+     
+        if(TS == 290000){
           
           #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
           if(j==1){btw<-betweenness(weightedgraph)
@@ -485,43 +485,10 @@ ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=in
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-#unbinned version of the above
-MeanExtTime <- SR_Time %>%
-  group_by(Dispersal, Patch_remove, Scale, Rep) %>%
-  mutate(NumExt = lag(SR) - SR) %>%
-  group_by(Dispersal, Patch_remove, Scale, TimeStep) %>%
-  summarize(Mean_NumExt = mean(NumExt, na.rm = T))
-
-
-ggplot(MeanExtTime,aes(x=TimeStep,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale))+
-  geom_line()+
-  #geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1,alpha = 0.1)+
-  facet_grid(Dispersal~Patch_remove)+
-  #facet_grid(Dispersal~Patch_remove,scale="free")+
-  #facet_grid(Scale~Patch_remove,scale="free")+
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
-
-
-  
-
-         
-
-#cut(ETime2.df$TimeStep, breaks = 0:length(sampleV))
-#.bincode
-
-#will plot the local species richness, averaged across replicates, for the last replicate of each of the 3 patch removal scenarios on one graph as a line
-#par(mfrow=c(length(removeV),length(dispV)))
- # for(o in 1:length(dispV)){
-#plot(SR_overtime[1,i,], type = 'l', xlab = "Time Step", ylab = "Species Richness", col = "blue", main = paste("Dispersal Level", dispV[o]))
-#lines(SR_overtime[2,i,],col="green", type='l')
-#lines(SR_overtime[3,i,],col="red", type='l')
-#}
-
 #will plot the local biomass of each individual patch for the last scenario run
 plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
-plot(L_Bmass_sep$X25, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
+plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
 
 SRTimeSummd <- summarise(group_by(SR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
 
