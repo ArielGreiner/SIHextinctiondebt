@@ -521,7 +521,7 @@ ggplot(MeanExtTime,aes(x=TimeStep,y=Mean_NumExt,color=Scale,group=interaction(Sc
 #will plot the local biomass of each individual patch for the last scenario run
 plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
-plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
+plot(L_Bmass_sep$X25, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
 
 SRTimeSummd <- summarise(group_by(SR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
 
