@@ -30,7 +30,7 @@ ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
 #drop_length<-ePeriod*4 #old version
-debtcollect_time <- 400000
+debtcollect_time <- 500000
 
 #Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tmax<-250000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
@@ -470,6 +470,17 @@ ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale,
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#number of species lost vs time until last extinction plot, split into local and regional plots
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=interaction(Patch_remove, Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
+  geom_point()+ 
+  #geom_line()+
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+ 
+  facet_grid(Scale~.)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+
 
 
 
@@ -493,6 +504,10 @@ for(w in 1:length(removeV)){
     
   }
 }
+
+#not sure if need the line below, because the one time that i tested things i saw that there were 4 extinctions...and when i checked the SR
+#over time plot i saw that there was an extinction in that last time step...(0.05 dispersal, min betweenness, regional)
+#ED_data$LastDebtTime == length(sampleV) - 1 <- NA
 
 #plot below here is no longer relevant, and if did want to use it again - would need to fix it so that the scale was the same for all of them
 require(ggplot2)
