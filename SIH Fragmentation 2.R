@@ -471,8 +471,11 @@ ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale,
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #number of species lost vs time until last extinction plot, split into local and regional plots
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=interaction(Patch_remove, Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
+require(ggplot2)
+#number of species lost vs time until last extinction plot
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Dispersal,group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
+  geom_point(aes(shape = factor(Patch_remove)))+
   #geom_line()+
   #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
   #facet_grid(Dispersal~Patch_remove,scale="free")+ 
