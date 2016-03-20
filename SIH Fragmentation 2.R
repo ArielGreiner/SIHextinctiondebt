@@ -10,6 +10,7 @@ require(data.table)
 
 reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
+set.seed(2)
 
 nSpecies<-15
 numCom<-30
@@ -483,7 +484,18 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Dispersal,group=interaction(Sca
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-
+#number of species lost vs time until last extinction plot, split into local and regional plots <- alternate, more colourful version
+require(ggplot2)
+#number of species lost vs time until last extinction plot
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=interaction(Dispersal, Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+
+  geom_point()+ 
+  geom_point()+
+  #geom_line()+
+  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+ 
+  facet_grid(Scale~.)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
 
