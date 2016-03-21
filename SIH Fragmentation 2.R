@@ -31,7 +31,7 @@ ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
 #drop_length<-ePeriod*4 #old version
-debtcollect_time <- 500000
+debtcollect_time <- 1000000
 
 #Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tmax<-250000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
@@ -477,9 +477,8 @@ require(ggplot2)
 ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Dispersal,group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
   geom_point(aes(shape = factor(Patch_remove)))+
-  #geom_line()+
-  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
-  #facet_grid(Dispersal~Patch_remove,scale="free")+ 
+  xlab("Time Until Last Extinction")+
+  ylab("Number of Species Lost")+
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
@@ -489,10 +488,8 @@ require(ggplot2)
 #number of species lost vs time until last extinction plot
 ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=interaction(Dispersal, Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
-  geom_point()+
-  #geom_line()+
-  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
-  #facet_grid(Dispersal~Patch_remove,scale="free")+ 
+  xlab("Time Until Last Extinction")+
+  ylab("Number of Species Lost")+
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
