@@ -457,7 +457,7 @@ plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = pa
 SRTimeSummd <- summarise(group_by(SR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
 
 require(ggplot2)
-#number of species lost vs time until last extinction plot
+#SR over time plots
 ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
   #geom_point()+ 
   geom_line()+
@@ -471,10 +471,23 @@ ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale,
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+EDdata_avg <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), 
+                      Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T))
+
 #number of species lost vs time until last extinction plot, split into local and regional plots
 require(ggplot2)
 #number of species lost vs time until last extinction plot
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Dispersal,group=interaction(Scale, Patch_remove, Dispersal)))+
+ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
+  geom_point()+ 
+  geom_point(aes(shape = factor(Patch_remove)))+
+  xlab("Time Until Last Extinction")+
+  ylab("Number of Species Lost")+
+  geom_errorbar(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
+  facet_grid(Scale~.)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
   geom_point(aes(shape = factor(Patch_remove)))+
   xlab("Time Until Last Extinction")+
@@ -486,10 +499,11 @@ ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Dispersal,group=interaction(Sca
 #number of species lost vs time until last extinction plot, split into local and regional plots <- alternate, more colourful version
 require(ggplot2)
 #number of species lost vs time until last extinction plot
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=interaction(Dispersal, Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+
+ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=interaction(Dispersal, Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
   xlab("Time Until Last Extinction")+
   ylab("Number of Species Lost")+
+  geom_errorbar(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
