@@ -43,7 +43,7 @@ removeV<-c("Max betweenness","Min betweenness","Random")
 #Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),
       #Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),
       #Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
-Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3),Dispersal=rep(dispV,each=reps*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*3),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects"))),Proportion=NA)
+Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3*length(sampleV)),Dispersal=rep(dispV,each=reps*3*length(sampleV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*3*length(sampleV)),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")), each = length(sampleV)),TimeStep = rep(1:length(sampleV)),Proportion=NA)
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 #Extinction Debt data frames
@@ -272,13 +272,13 @@ for(r in 1:reps){
                             SIH_data_reps$Dispersal==dispV[i] & SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-Component_data_means
 
       # mean.df<-summarise(group_by(Meta_dyn,Patches),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
-      mean.df<-summarise(group_by(Meta_dyn),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
+      ##mean.df<-summarise(group_by(Meta_dyn),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
       #Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
-      Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion)
+      ##Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion)
       # Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta.dyn.long$Proportion[1]
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta.dyn.long$Proportion[2]
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Base growth"] <- Meta.dyn.long$Proportion[3]
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta_dyn$Species_sorting
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta_dyn$Mass_effects
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Base growth"] <- Meta_dyn$Base_growth
       #ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
       #Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
       #Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)      
