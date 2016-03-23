@@ -8,15 +8,15 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-5
+reps<-1
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 nSpecies<-15
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
-#dispV <- 0.005
-dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+dispV <- 0.005
+#dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -40,7 +40,10 @@ DT<- 0.08 # % size of discrete "time steps"
 sampleV<-seq(252000,Tmax,by=2000) #this ensures that the first sample taken is of the intact network
 removeV<-c("Max betweenness","Min betweenness","Random")
 
-Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
+#Meta_dyn_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)*3),Dispersal=rep(dispV,each=reps*(numCom-0)*3),
+      #Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*3),
+      #Patches=NA,Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")),each=numCom-0),Proportion=NA)
+Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3),Dispersal=rep(dispV,each=reps*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*3),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects"))),Proportion=NA)
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 #Extinction Debt data frames
@@ -94,7 +97,8 @@ for(r in 1:reps){
       N0<-N<- matrix(10,ncol=nSpecies,nrow=numCom) # Community x Species abundance matrix
       R0<-R<-rep(10*(nSpecies/10),numCom)
       
-      Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA,Patches=NA)
+      #Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA,Patches=NA)
+      Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA)
       Species_data<-array(NA,dim=c(length(sampleV),nSpecies,2),dimnames = list(sampleV,1:nSpecies,c("Abundance","Occupancy")))
       Components<-data.frame(Number_components=rep(NA, length(sampleV)),Component_size=NA,Component_envt_range=NA)
       
@@ -159,7 +163,7 @@ for(r in 1:reps){
             if(total_prod==0){BP<-NA}
             Meta_dyn$Base_growth[sample_id]<-BP
             
-            Meta_dyn$Patches[sample_id]<-1
+            #Meta_dyn$Patches[sample_id]<-1
             
             Species_data[sample_id,,1]<-N
             Species_data[sample_id,,2]<-N>0
@@ -195,7 +199,7 @@ for(r in 1:reps){
             if(total_prod==0){BP<-NA}
             Meta_dyn$Base_growth[sample_id]<-BP
             
-            Meta_dyn$Patches[sample_id]<-nrow(N)
+            #Meta_dyn$Patches[sample_id]<-nrow(N)
             
             Species_data[sample_id,,1]<-colSums(N)
             Species_data[sample_id,,2]<-colSums(N>0)
@@ -268,12 +272,13 @@ for(r in 1:reps){
                             SIH_data_reps$Dispersal==dispV[i] & SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-Component_data_means
 
       # mean.df<-summarise(group_by(Meta_dyn,Patches),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
-      # Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
-      # 
+      mean.df<-summarise(group_by(Meta_dyn),Species_sorting=mean(Species_sorting,na.rm=T),Mass_effects=mean(Mass_effects,na.rm=T),Base_growth=mean(Base_growth,na.rm=T))
+      #Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion,-Patches)
+      Meta.dyn.long<-gather(mean.df,key = Dynamic,value=Proportion)
       # Meta_dyn_reps[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j],-c(1:3,5)]<-Meta.dyn.long[,-2]
-      # 
-      ##need to replace temp with a dataframe, temp right now gives the timestep at which a particular species goes extinct regionally    
-      
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta.dyn.long$Proportion[1]
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta.dyn.long$Proportion[2]
+      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Base growth"] <- Meta.dyn.long$Proportion[3]
       #ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
       #Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),
       #Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)      
