@@ -8,15 +8,15 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-1
+reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 nSpecies<-15
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
-dispV <- 0.005
-#dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+#dispV <- 0.005
+dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -31,7 +31,7 @@ ePeriod<-40000 #period of env sinusoidal fluctuations
 eAMP<-1 #amplitude of envrionment sinusoidal fluctuations
 
 #drop_length<-ePeriod*4 #old version
-debtcollect_time <- 1000000
+debtcollect_time <- 2000000
 
 #Tmax<-100000+drop_length*(numCom-0) #number of time steps in Sim, drop_length = # of iterations b/w patch deletions
 Tmax<-250000+40000+debtcollect_time #+40,000 added to ensure that an entire sine wave is taken of the intact network
