@@ -449,6 +449,20 @@ ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=in
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#log'd version
+ggplot(MeanExtTimeBin,aes(x=log((TimeStepRound)*5),y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
+  geom_line()+
+  #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1)+
+  facet_grid(Dispersal~Patch_remove)+
+  xlab("Log(Time Step)")+
+  ylab("Mean Number of Extinctions")+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  geom_vline(x=log(20))+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 #will plot the local biomass of each individual patch for the last scenario run
 plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
@@ -478,8 +492,9 @@ EDdata_avg <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRL
 require(ggplot2)
 #number of species lost vs time until last extinction plot
 ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
-  geom_point()+ 
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+
   geom_point(aes(shape = factor(Patch_remove)))+
+  scale_shape_manual(values=c(25,19, 17))+
   xlab("Time Until Last Extinction")+
   ylab("Number of Species Lost")+
   geom_errorbar(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
