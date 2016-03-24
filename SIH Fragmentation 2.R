@@ -508,6 +508,42 @@ ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=factor(Dispersal),
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#looking at the proportion of biomass due to the different metacommunity processes
+
+Metadyn_avg <- summarise(group_by(Meta_dyn_reps,Dispersal,Patch_remove,TimeStep,Dynamic), Mean_Proportion = mean(Proportion, na.rm=T), SD_Proportion = sd(Proportion, na.rm = T))
+
+ggplot(Metadyn_avg,aes(x=TimeStep,y=Mean_Proportion,color=factor(Dynamic),group=interaction(Dynamic, Patch_remove, Dispersal),alpha = 0.1))+
+  #scale_color_brewer("Process", palette = "BrBG")+
+  xlab("Time Step")+
+  ylab("Proportion of Biomass")+
+  geom_vline(x=20)+
+  geom_ribbon(aes(ymin=Mean_Proportion-SD_Proportion,ymax=Mean_Proportion+SD_Proportion),width=0.1)+
+  facet_grid(Patch_remove~Dispersal)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+MetaDynAvg_Bin <- Meta_dyn_reps %>%
+  group_by(Dispersal, Patch_remove, Dynamic, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
+  group_by(TimeStepRound,Dispersal,Patch_remove, Dynamic, Rep)%>%
+  summarize(Mean_Proportion = mean(Proportion, na.rm = T)) %>%
+  group_by(Dispersal,Patch_remove, Dynamic, Rep)%>%
+  mutate(BinProp = lag(Mean_Proportion) - Mean_Proportion) %>%
+  group_by(Dispersal, Patch_remove, Dynamic, TimeStepRound) %>%
+  summarize(Mean_BinProp = mean(BinProp, na.rm = T), SD_BinProp = sd(BinProp, na.rm = T))
+
+ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_BinProp,color=factor(Dynamic),group=interaction(Dynamic, Patch_remove, Dispersal)))+
+  #scale_color_brewer("Process", palette = "BrBG")+
+  xlab("Time Step (Rounded)")+
+  ylab("Proportion of Biomass")+
+  facet_grid(Patch_remove~Dispersal)+	  
+  geom_vline(x=20/20)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+  
+#geom_ribbon(aes(ymin=Mean_BinProp-SD_BinProp,ymax=Mean_BinProp+SD_BinProp),width=0.1)+
+
+
 ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
   geom_point()+ 
   geom_point(aes(shape = factor(Patch_remove)))+
