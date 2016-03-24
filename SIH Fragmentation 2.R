@@ -532,16 +532,16 @@ MetaDynAvg_Bin <- Meta_dyn_reps %>%
   group_by(Dispersal, Patch_remove, Dynamic, TimeStepRound) %>%
   summarize(Mean_BinProp = mean(BinProp, na.rm = T), SD_BinProp = sd(BinProp, na.rm = T))
 
-ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_BinProp,color=factor(Dynamic),group=interaction(Dynamic, Patch_remove, Dispersal)))+
-  #scale_color_brewer("Process", palette = "BrBG")+
-  xlab("Time Step (Rounded)")+
+ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound*20,y=Mean_BinProp,color=factor(Dynamic),group=interaction(Dynamic, Patch_remove, Dispersal), fill = factor(Dynamic), alpha = 0.01))+
+  xlab("Time Step")+
   ylab("Proportion of Biomass")+
   facet_grid(Patch_remove~Dispersal)+	  
-  geom_vline(x=20/20)+
+  geom_vline(x=20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
+  geom_ribbon(aes(ymin=Mean_BinProp-SD_BinProp,ymax=Mean_BinProp+SD_BinProp),width=0.1)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
   
-#geom_ribbon(aes(ymin=Mean_BinProp-SD_BinProp,ymax=Mean_BinProp+SD_BinProp),width=0.1)+
+
 
 
 ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
