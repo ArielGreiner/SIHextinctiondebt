@@ -444,7 +444,7 @@ MeanExtTimeBin <- SR_Time %>%
 ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
   geom_line()+
   #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
-  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1)+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1, color = NA)+
   facet_grid(Dispersal~Patch_remove)+
   xlab("Time Step")+
   ylab("Mean Number of Extinctions")+
@@ -455,16 +455,17 @@ ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=in
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #log'd version
-ggplot(MeanExtTimeBin,aes(x=log((TimeStepRound)*5),y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
+ggplot(MeanExtTimeBin,aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
   geom_line()+
+  scale_x_log10()+
   #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
-  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1)+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1, color = NA)+
   facet_grid(Dispersal~Patch_remove)+
   xlab("Log(Time Step)")+
   ylab("Mean Number of Extinctions")+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
-  geom_vline(x=log(20))+
+  geom_vline(x=20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
@@ -480,7 +481,7 @@ require(ggplot2)
 ggplot(SRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
   #geom_point()+ 
   geom_line()+
-  geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1)+
+  geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
   xlab("Time Step")+
   ylab("Mean Species Richness")+
   geom_vline(x=20)+
@@ -525,20 +526,20 @@ ggplot(Metadyn_avg,aes(x=TimeStep,y=Mean_Proportion,color=factor(Dynamic),group=
 MetaDynAvg_Bin <- Meta_dyn_reps %>%
   group_by(Dispersal, Patch_remove, Dynamic, Rep) %>%
   mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
-  group_by(TimeStepRound,Dispersal,Patch_remove, Dynamic, Rep)%>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Dynamic, Rep)%>%
   summarize(Mean_Proportion = mean(Proportion, na.rm = T)) %>%
-  group_by(Dispersal,Patch_remove, Dynamic, Rep)%>%
-  mutate(BinProp = lag(Mean_Proportion) - Mean_Proportion) %>%
   group_by(Dispersal, Patch_remove, Dynamic, TimeStepRound) %>%
-  summarize(Mean_BinProp = mean(BinProp, na.rm = T), SD_BinProp = sd(BinProp, na.rm = T))
+  summarize(SD_Proportion = sd(Mean_Proportion, na.rm = T), Mean_Proportion = mean(Mean_Proportion, na.rm = T))
 
-ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound*20,y=Mean_BinProp,color=factor(Dynamic),group=interaction(Dynamic, Patch_remove, Dispersal), fill = factor(Dynamic), alpha = 0.01))+
+ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill = Dynamic))+
   xlab("Time Step")+
   ylab("Proportion of Biomass")+
-  facet_grid(Patch_remove~Dispersal)+	  
-  geom_vline(x=20)+
+  geom_line()+
+  scale_x_log10()+
+  facet_grid(Dispersal~Patch_remove)+	  
+  geom_vline(x=20/20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
-  geom_ribbon(aes(ymin=Mean_BinProp-SD_BinProp,ymax=Mean_BinProp+SD_BinProp),width=0.1)+
+  geom_ribbon(aes(ymin=Mean_Proportion-SD_Proportion,ymax=Mean_Proportion+SD_Proportion), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
   
 
