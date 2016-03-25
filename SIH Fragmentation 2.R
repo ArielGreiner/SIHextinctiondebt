@@ -12,7 +12,7 @@ reps<-5
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
-nSpecies<-15
+nSpecies<-11
 numCom<-30
 randV<-50#seq(10,90,by=20) #randV/100 = % random links
 #dispV <- 0.005
