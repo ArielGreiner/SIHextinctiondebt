@@ -496,9 +496,10 @@ require(ggplot2)
 ggplot(PropSRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
   #geom_point()+ 
   geom_line()+
+  scale_x_log10()+
   geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
-  xlab("Time Step")+
-  ylab("Mean Species Richness")+
+  xlab("Log(Time Step)")+
+  ylab("Mean Proportion of Species Richness")+
   geom_vline(x=20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
@@ -528,15 +529,43 @@ EDdata_avg <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRL
                       Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T))
 
 #number of species lost vs time until last extinction plot, split into local and regional plots
-require(ggplot2)
-#number of species lost vs time until last extinction plot
 ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
   scale_color_brewer("Dispersal Level", palette = "BrBG")+
-  geom_point(aes(shape = factor(Patch_remove)))+
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
   scale_shape_manual(values=c(25,19, 17))+
   xlab("Time Until Last Extinction")+
   ylab("Number of Species Lost")+
   geom_errorbar(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
+  geom_errorbarh(aes(xmin=Mean_LastDebtTime-SD_LastDebtTime,xmax=Mean_LastDebtTime+SD_LastDebtTime),width=0.1)+
+  facet_grid(Scale~.)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+for(o in 1:length(dispV)){
+  for(w in 1:length(removeV)){
+    for(j in 1:reps){
+      Numat20 <- SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][20]
+      
+      ED_data$PercentLoss[ED_data$Scale == "Regional" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][length(sampleV)])/Numat20
+      
+      Numat20 <- SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][20]
+      
+      ED_data$PercentLoss[ED_data$Scale == "Local" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][length(sampleV)])/Numat20 
+    }
+  }	
+}
+
+EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), 
+                        Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T), Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T))
+
+
+ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  scale_shape_manual(values=c(25,19, 17))+
+  xlab("Time Until Last Extinction")+
+  ylab("Percentage of Species Lost")+
+  geom_errorbar(aes(ymin=Mean_PercentLoss-SD_PercentLoss,ymax=Mean_PercentLoss+SD_PercentLoss),width=0.1)+
   geom_errorbarh(aes(xmin=Mean_LastDebtTime-SD_LastDebtTime,xmax=Mean_LastDebtTime+SD_LastDebtTime),width=0.1)+
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
