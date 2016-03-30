@@ -461,13 +461,35 @@ ggplot(MeanExtTimeBin,aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=inte
   #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
   geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1, color = NA)+
   facet_grid(Dispersal~Patch_remove)+
-  xlab("Log(Time Step)")+
+  xlab("Time Step")+
   ylab("Mean Number of Extinctions")+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   geom_vline(x=20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#unbinned version of the above 
+MeanExtTime <- SR_Time %>%
+  group_by(Dispersal, Patch_remove, Scale, Rep) %>%
+  mutate(NumExt = lag(SR) - SR) %>%
+  group_by(Dispersal, Patch_remove, Scale, TimeStep) %>%
+  summarize(Mean_NumExt = mean(NumExt, na.rm = T), SD_NumExt = sd(NumExt, na.rm = T))
+
+ggplot(MeanExtTime,aes(x=TimeStep,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
+ geom_line()+
+  scale_x_log10()+
+  #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
+  geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1, color = NA)+
+  facet_grid(Dispersal~Patch_remove)+
+  xlab("Time Step (unbinned)")+
+  ylab("Mean Number of Extinctions")+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  geom_vline(x=20)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 
 #will plot the local biomass of each individual patch for the last scenario run
 plot(L_Bmass_sep$X30, type = 'l')
@@ -498,7 +520,7 @@ ggplot(PropSRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Sc
   geom_line()+
   scale_x_log10()+
   geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
-  xlab("Log(Time Step)")+
+  xlab("Time Step")+
   ylab("Mean Proportion of Species Richness")+
   geom_vline(x=20)+
   facet_grid(Dispersal~Patch_remove)+
@@ -559,15 +581,17 @@ EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SR
                         Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T), Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T))
 
 
-ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
+ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal), alpha = Scale))+
   scale_color_brewer("Dispersal Level", palette = "BrBG")+
   geom_point(aes(shape = factor(Patch_remove)), size = 4)+
-  scale_shape_manual(values=c(25,19, 17))+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  scale_alpha_discrete(range = c(0.4,1))+
   xlab("Time Until Last Extinction")+
   ylab("Percentage of Species Lost")+
   geom_errorbar(aes(ymin=Mean_PercentLoss-SD_PercentLoss,ymax=Mean_PercentLoss+SD_PercentLoss),width=0.1)+
   geom_errorbarh(aes(xmin=Mean_LastDebtTime-SD_LastDebtTime,xmax=Mean_LastDebtTime+SD_LastDebtTime),width=0.1)+
-  facet_grid(Scale~.)+	  
+  #facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
