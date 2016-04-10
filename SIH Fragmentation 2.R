@@ -8,7 +8,7 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-5
+reps<-20
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
@@ -490,8 +490,9 @@ for(o in 1:length(dispV)){
   }	
 }
 
-EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), 
-                        Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T), Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T))
+EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Range_SRLoss = range(SRLoss, na.rm = T)[2]-range(SRLoss, na.rm = T)[1],
+                        Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T),Range_LastDebtTime = range(LastDebtTime, na.rm = T)[2]-range(LastDebtTime, na.rm = T)[1], Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), 
+                        Range_PercentLoss = range(PercentLoss, na.rm = T)[2]-range(PercentLoss, na.rm = T)[1])
 
 #figure 3 (4/3/2016)
 #percent of species lost vs time until last extinction plot
@@ -508,6 +509,23 @@ ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispe
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#figure 3 (4/9/2016)
+#percent of species lost vs time until last extinction plot
+ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+ #alpha = Scale
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Time Until Last Extinction")+
+  ylab("Percentage of Species Lost")+
+  geom_errorbar(aes(ymin=Mean_PercentLoss-Range_PercentLoss,ymax=Mean_PercentLoss+Range_PercentLoss),width=0.1)+
+  geom_errorbarh(aes(xmin=Mean_LastDebtTime-Range_LastDebtTime,xmax=Mean_LastDebtTime+Range_LastDebtTime),width=0.1)+
+  facet_grid(Scale~.)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 
 #looking at the proportion of biomass due to the different metacommunity processes
 
