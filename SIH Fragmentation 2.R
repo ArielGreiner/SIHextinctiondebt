@@ -50,8 +50,9 @@ ED_data<-data.frame(Rep=rep(1:reps,each=2),Dispersal=rep(dispV,each=reps*2),
                     Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*2),Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA)
                     
 #old extinction debt dataframes from when all 30 patches were being deleted sequentially, left in just in case come in use later 
-ETime_Localdata<-data.frame(Rep=rep(1:reps, each =length(dispV)*length(removeV)*numCom*nSpecies),
-    Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min 	betweenness","Random","Max betweenness"),ordered = T)),Species = rep(1:nSpecies, each = numCom*length(dispV)*length(removeV)), Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
+ETime_Localdata<-data.frame(Rep=rep(1:reps,each = length(dispV)*length(removeV)*numCom*nSpecies),
+    Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),Species = rep(1:nSpecies, each = numCom*length(dispV)*length(removeV)), 
+    Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
 ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
    Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
 SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
@@ -74,7 +75,7 @@ for(r in 1:reps){
     for(j in 1:3){ 
       weightedgraph<-addweights(unweightedgraph,numLinks,numCom)
       holdgraph<-weightedgraph
-      if(print.plots==T){plot(holdgraph, ylim=c(-1,1),xlim=c(-1,1))} 
+      if(print.plots==T){plot(holdgraph, ylim=c(-1,1),xlim=c(-1,1), main = paste("Original Graph", removeV[j]))} 
       #create dispersal matrix
       d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
       d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
@@ -212,7 +213,7 @@ for(r in 1:reps){
      #delete 10 patches according to scheme of choice (defined by 'j' value)
         if(TS == 290000){
           
-          #deletes 5 patches at time step = 102,000 according to whatever scheme you choose
+          #deletes 10 patches at time step = 290,000 according to whatever scheme you choose
           if(j==1){btw<-betweenness(weightedgraph)
           if(sum(btw==0)){
             patch.delete<-order(degree(weightedgraph),decreasing = T)[1:10]
@@ -228,7 +229,7 @@ for(r in 1:reps){
           
           
           if(print.plots==T){
-            if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1))} else{plot(weightedgraph)}}
+            if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1), main = paste("Altered Graph", removeV[j]))} else{plot(weightedgraph)}}
           N<-N[-patch.delete,]
           R<-R[-patch.delete]
           N0<-N0[-patch.delete,]
