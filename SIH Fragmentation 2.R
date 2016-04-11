@@ -490,9 +490,9 @@ for(o in 1:length(dispV)){
   }	
 }
 
-EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Range_SRLoss = range(SRLoss, na.rm = T)[2]-range(SRLoss, na.rm = T)[1],
-                        Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T),Range_LastDebtTime = range(LastDebtTime, na.rm = T)[2]-range(LastDebtTime, na.rm = T)[1], Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), 
-                        Range_PercentLoss = range(PercentLoss, na.rm = T)[2]-range(PercentLoss, na.rm = T)[1])
+EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss = range(SRLoss, na.rm = T)[1], Highest_SRLoss = range(SRLoss, na.rm = T)[2],
+                        Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T),Lowest_LastDebtTime = range(LastDebtTime, na.rm = T)[1], Highest_LastDebtTime = range(LastDebtTime, na.rm = T)[2], Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), 
+                        Lowest_PercentLoss = range(PercentLoss, na.rm = T)[1], Highest_PercentLoss = range(PercentLoss, na.rm = T)[2])
 
 #figure 3 (4/3/2016)
 #percent of species lost vs time until last extinction plot
@@ -520,8 +520,8 @@ ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispe
   #scale_alpha_discrete(range = c(0.4,1))+
   xlab("Time Until Last Extinction")+
   ylab("Percentage of Species Lost")+
-  geom_errorbar(aes(ymin=Mean_PercentLoss-Range_PercentLoss,ymax=Mean_PercentLoss+Range_PercentLoss),width=0.1)+
-  geom_errorbarh(aes(xmin=Mean_LastDebtTime-Range_LastDebtTime,xmax=Mean_LastDebtTime+Range_LastDebtTime),width=0.1)+
+  geom_errorbar(aes(ymin=Lowest_PercentLoss,ymax=Highest_PercentLoss),width=0.1)+
+  geom_errorbarh(aes(xmin=Lowest_LastDebtTime,xmax=Highest_LastDebtTime),width=0.1)+
   facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
