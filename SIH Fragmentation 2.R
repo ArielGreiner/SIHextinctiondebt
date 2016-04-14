@@ -369,7 +369,7 @@ ggplot(MeanExtTimeBin,aes(x=(TimeStepRound)*5,y=Mean_NumExt,color=Scale,group=in
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #log'd version
-#this is figure 2 (4/3/2016)
+#this is figure 3 (4/14/2016)
 ggplot(MeanExtTimeBin,aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
   geom_line()+
   scale_x_log10()+
@@ -424,7 +424,7 @@ for(o in 1:length(dispV)){
 
 PropSRTimeSummd <- summarise(group_by(PropSR_Time, Dispersal, Patch_remove, TimeStep, Scale), Mean_SR = mean(SR, na.rm=T), SD_SR = sd(SR, na.rm = T))
 
-#this is figure 1 (4/3/2016) (mean proportional species richness over time, across all scenarios)
+#this is figure 2 (4/14/2016) (mean proportional species richness over time, across all scenarios)
 require(ggplot2)
 #SR over time plots
 ggplot(PropSRTimeSummd,aes(x=TimeStep,y=Mean_SR,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
@@ -510,11 +510,12 @@ ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispe
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-#figure 3 (4/9/2016)
+#figure 4 (4/14/2016)
 #percent of species lost vs time until last extinction plot
 ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+ #alpha = Scale
   scale_color_brewer("Dispersal Level", palette = "BrBG")+
   geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_x_log10()+
   #scale_shape_manual(values=c(25,19, 17))+
   scale_shape_manual(values=c(15,19, 17))+
   #scale_alpha_discrete(range = c(0.4,1))+
