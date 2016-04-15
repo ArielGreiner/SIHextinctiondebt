@@ -527,7 +527,7 @@ ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispe
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-#Supplementary Material Figure 2 (4.15.2016)
+#Supplementary Material Figure 1 (4.15.2016)
 ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal), alpha = Scale))+ 
   #alpha = Scale +
   scale_color_brewer("Dispersal Level", palette = "BrBG")+
@@ -569,7 +569,7 @@ MetaDynAvg_Bin <- Meta_dyn_reps %>%
   group_by(Dispersal, Patch_remove, Dynamic, TimeStepRound) %>%
   summarize(SD_Proportion = sd(Mean_Proportion, na.rm = T), Mean_Proportion = mean(Mean_Proportion, na.rm = T))
 
-#supplementary materials figure 1 (4/3/2016)
+#supplementary materials figure 2 (4/3/2016)
 ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill = Dynamic))+
   xlab("Time Step")+
   ylab("Proportion of Biomass")+
