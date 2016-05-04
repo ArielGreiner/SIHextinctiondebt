@@ -8,13 +8,13 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 
-reps<-20
+reps<- 10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 nSpecies<-11
 numCom<-30
-randV<-50#seq(10,90,by=20) #randV/100 = % random links
+randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
 #dispV <- 0.005
 dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
@@ -55,10 +55,17 @@ ETime_Localdata<-data.frame(Rep=rep(1:reps,each = length(dispV)*length(removeV)*
     Patches = rep(1:numCom, each = length(dispV)*length(removeV)),TimeStep = NA)
 ETime_Regionaldata<-data.frame(Rep=rep(1:reps, each = length(dispV)*length(removeV)*nSpecies),
    Dispersal=rep(dispV, each = length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T)),Species = rep(1:nSpecies, each = length(dispV)*length(removeV)), TimeStep = NA)
+
+
 SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
         Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
         TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
+DivMetrics_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
+                              Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+                              Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+                              TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), ExpShannon = NA, ExpShannonBeta = NA)
+
 
 #start of simulations
 #initialize community network use rewire for lattice or small world - use random for random
@@ -202,6 +209,16 @@ for(r in 1:reps){
             Species_data[sample_id,,1]<-colSums(N)
             Species_data[sample_id,,2]<-colSums(N>0)
           }
+          renyi_avgshannon_a <- prod(renyi(t(Abund[,,counter]),scales=1, hill=T))^(1/npatches)
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Local"] <- renyi_avgshannon_a
+          regional_data <- colSums(t(Abund[,,counter]))
+          renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+          counter <- counter + 1
         } 
         
         N <- Nt * (Nt>Ext) # set to 0 if below extinction threshold
@@ -610,7 +627,6 @@ ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=interaction(Disper
 plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
 plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
-
 
 ###Plots no longer in use (some of which were from the 30 patch deletion days)
 
