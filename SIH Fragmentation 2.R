@@ -64,10 +64,10 @@ SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*len
         Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
         TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
-DivMetrics_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
+Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
                               Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
-                              TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), ExpShannon = NA, ExpShannonBeta = NA)
+                              TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), ExpShannon = NA, ExpShannonBeta = NA, Biomass = NA)
 
 
 #start of simulations
@@ -220,14 +220,14 @@ for(r in 1:reps){
             com_data <- Abund[,,counter] 
             com_data[is.na(com_data)] = 0
             renyi_avgshannon_a <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
-            DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
-                                         DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Local"] <- renyi_avgshannon_a
+            Biomass_Time$ExpShannon[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                         Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
-            DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
-                                         DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma
-            DivMetrics_Time$ExpShannonBeta[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
-                                             DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+            Biomass_Time$ExpShannon[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                         Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
+            Biomass_Time$ExpShannonBeta[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
           }
         } 
 
@@ -272,6 +272,14 @@ for(r in 1:reps){
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums, na.rm=T))
+      
+      Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
+      
+      Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- R_Bmass
+      
+      
       
       cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
       
