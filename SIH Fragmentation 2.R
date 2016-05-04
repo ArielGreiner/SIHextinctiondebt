@@ -9,7 +9,11 @@ require(tidyr)
 require(data.table)
 require(vegan)
 
+<<<<<<< HEAD
 reps<- 1#10
+=======
+reps<- 10
+>>>>>>> 501889f5691125524603e8d6e5273c0507ffdd3f
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
@@ -17,8 +21,13 @@ set.seed(2)
 nSpecies<-11
 numCom<-30
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
+<<<<<<< HEAD
 dispV <- 0.005
 #dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+=======
+#dispV <- 0.005
+dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+>>>>>>> 501889f5691125524603e8d6e5273c0507ffdd3f
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -212,6 +221,7 @@ for(r in 1:reps){
             Species_data[sample_id,,1]<-colSums(N)
             Species_data[sample_id,,2]<-colSums(N>0)
           }
+<<<<<<< HEAD
           #Diversity Metrics
           counter <- counter + 1
           if(counter < 1021){
@@ -228,6 +238,19 @@ for(r in 1:reps){
                                              DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
           }
          } 
+=======
+          renyi_avgshannon_a <- prod(renyi(t(Abund[,,counter]),scales=1, hill=T))^(1/npatches)
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Local"] <- renyi_avgshannon_a
+          regional_data <- colSums(t(Abund[,,counter]))
+          renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma
+          DivMetrics_Time$ExpShannon[DivMetrics_Time$Rep==r & DivMetrics_Time$Dispersal==dispV[i] & 
+            DivMetrics_Time$Patch_remove==removeV[j] & DivMetrics_Time$TimeStep == counter & DivMetrics_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+          counter <- counter + 1
+        } 
+>>>>>>> 501889f5691125524603e8d6e5273c0507ffdd3f
         
         N <- Nt * (Nt>Ext) # set to 0 if below extinction threshold
         R <- Rt
