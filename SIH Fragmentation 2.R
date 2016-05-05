@@ -70,10 +70,10 @@ Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV
                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
                               TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), EffDiv = NA, EffDivBetaMult = NA, EffDivBetaAdd = NA, Biomass = NA)
 
-IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)*2),
-                         Dispersal=rep(dispV, each = length(removeV)*numCom*2),
-                         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom*2),
-                         Patch = rep(1:numCom),Scale=rep(c("Local","Regional"), each = numCom), Betweenness = NA, LastExtTime = NA)
+IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)),
+                         Dispersal=rep(dispV, each = length(removeV)*numCom),
+                         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom),
+                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA)
 
 EffectiveDiv_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*3),
                   Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
@@ -230,16 +230,16 @@ for(r in 1:reps){
             com_data[is.na(com_data)] = 0
             renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
             renyi_avgshannon_a <- mean(renyi(com_data,scales=1, hill=T))
-            #Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                         #Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
+            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
-            #Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                         #Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
+            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
             Biomass_Time$EffDivBetaMult[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
-            #Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                         # Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
+            Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
             EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
                                            EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Alpha"] <- renyi_avgshannon_a
             EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
@@ -396,9 +396,9 @@ for(r in 1:reps){
       ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
       
       #Individual Patch Type Metrics
-      IndivPatch$Betweenness[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j] & IndivPatch$Scale=="Regional"] <- btw
+      IndivPatch$Betweenness[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j]] <- btw
       
-      IndivPatch$LastExtTime[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j] & IndivPatch$Scale=="Regional"] <- L_SRlast.df$Debt_t
+      IndivPatch$LastExtTime[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j]] <- L_SRlast.df$Debt_t
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
@@ -583,7 +583,7 @@ ggplot(EDdata_avg2,aes(x=Mean_LastDebtTime,y=Mean_PercentLoss,color=factor(Dispe
   ylab("Percentage of Species Lost")+
   geom_errorbar(aes(ymin=Lowest_PercentLoss,ymax=Highest_PercentLoss),width=0.1, linetype = 2)+
   geom_errorbarh(aes(xmin=Lowest_LastDebtTime,xmax=Highest_LastDebtTime),width=0.1, linetype = 2)+
-  #facet_grid(Scale~.)+	  
+  facet_grid(Scale~.)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
@@ -640,7 +640,23 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_Proportion-SD_Proportion,ymax=Mean_Proportion+SD_Proportion), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
-  
+
+##Individual Patch Level Stuff
+ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=interaction(Scale, Rep),group=interaction(Scale, Patch_remove, Dispersal, Rep)))+ 
+  #scale_color_brewer("Dispersal Level", palette = "BrBG")+
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_x_log10()+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Betweenness")+
+  ylab("Time Until Last Extinction")+
+  #geom_errorbar(aes(ymin=Lowest_PercentLoss,ymax=Highest_PercentLoss),width=0.1, linetype = 2)+
+  #geom_errorbarh(aes(xmin=Lowest_LastDebtTime,xmax=Highest_LastDebtTime),width=0.1, linetype = 2)+
+  facet_grid(Patch_remove~Dispersal)+	  
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 ##Plotting Biomass
 require(ggplot2)
 #Raw Biomass Plot
