@@ -10,7 +10,7 @@ require(data.table)
 require(vegan)
 
 
-reps<- 1#10
+reps<- 10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
@@ -18,8 +18,8 @@ set.seed(2)
 nSpecies<-11
 numCom<-30
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
-dispV <- 0.005
-#dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
+#dispV <- 0.005
+dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
 
@@ -631,26 +631,6 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
 
 
 ###old plots
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+
-  geom_point()+ 
-  geom_point(aes(shape = factor(Patch_remove)))+
-  xlab("Time Until Last Extinction")+
-  ylab("Number of Species Lost")+
-  facet_grid(Scale~.)+	  
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
-
-#number of species lost vs time until last extinction plot, split into local and regional plots <- alternate, more colourful version
-require(ggplot2)
-#number of species lost vs time until last extinction plot
-ggplot(EDdata_avg,aes(x=Mean_LastDebtTime,y=Mean_SRLoss,color=interaction(Dispersal, Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+
-  geom_point()+ 
-  xlab("Time Until Last Extinction")+
-  ylab("Number of Species Lost")+
-  geom_errorbar(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
-  facet_grid(Scale~.)+	  
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 ###Tester Plots
 #will plot the local biomass of each individual patch for the last scenario run
@@ -658,127 +638,6 @@ plot(L_Bmass_sep$X30, type = 'l')
 #7, 11, 18, 24, 30
 plot(L_Bmass_sep$X30, type = 'l', xlab = "Time Step",ylab = "Biomass", main = paste("Biomass of Patch", sep = " ",30, "over time [Dispersal = ",dispV[i], ", removal sequence = ", removeV[j], "]"))
 
-###Plots no longer in use (some of which were from the 30 patch deletion days)
-
-#copy of the framework of the big dataframe included below for clarity
-#ED_data<-data.frame(Rep=rep(1:reps,each=(numCom-0)*2),Dispersal=rep(dispV,each=reps*(numCom-0)*2),
-#Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)*2),
-#Scale=rep(c("Local","Regional"),each=numCom), Patches=NA, FirstDebtTime = NA, LastDebtTime = NA, SRLoss = NA)
-
-#if want to deal with the data not on a rep-by-rep basis
-#ED_data_summarized<-summarise(group_by(ED_data, Dispersal, Patch_remove, Patches, Scale), 
-                              #Mean_FirstDebtTime=mean(FirstDebtTime,na.rm=T), SD_FirstDebtTime=sd(FirstDebtTime,na.rm=T), Mean_LastDebtTime=mean(LastDebtTime,na.rm=T), 
-                              #SD_LastDebtTime=sd(LastDebtTime,na.rm=T), Mean_SRLoss=mean(SRLoss, na.rm=T), SD_SRLoss=sd(SRLoss, na.rm=T))
-
-
-#regional faunal decay plot
-plot(x = c(1:600),y = R_SR.df$R_SR,pch = 20, cex = 0.1, abline(v=seq(0,600, by = 20),col=3,lty=3), xlab = "Time Step", ylab = "Number of Species")
-
-#the regional data file has -Inf if the species never appears in the community (only looking after the first 100k time steps), this is to replace
-#that with an NA
-#if regional data time to go extinct = 220, or local data time to go extinct = 221 - that means that the species doesn't go extinct during 
-#the elapsed time in the simulation
-temp1 <- ETime_Regionaldata
-temp1[temp1 == -Inf] <- NA
-temp1[temp1 == length(sampleV)] <- NA 
-
-temp2 <- ETime_Localdata
-temp2[temp2 == -Inf] <- -1
-temp2[temp2 == length(sampleV)+1] <- NA
-
-#summarize over all patches
-temp2.1 <- summarise(group_by(temp2, Dispersal, Patch_remove, Rep, Species), 
-                     Mean_TimeStep=mean(TimeStep,na.rm=T), SD_TimeStep=sd(TimeStep,na.rm=T))
-
-ETime.df <- data.frame(Dispersal=rep(dispV, each = length(removeV)*2*reps),
-                       Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each=2*reps),
-                       Scale=rep(c("Local","Regional"), each = reps), Rep = rep(1:reps),Species = rep(1:nSpecies, each = length(dispV)*length(removeV)*2*reps), 
-                       TimeStep = NA)
-
-#sorry Patrick
-for(o in 1:length(dispV)){
-  for(w in 1:length(removeV)){
-    for(i in 1:nSpecies){
-      for(j in 1:reps){
-        ETime.df$TimeStep[ETime.df$Scale == "Regional" & ETime.df$Dispersal == dispV[o] & ETime.df$Patch_remove == removeV[w] & ETime.df$Species == i & ETime.df$Rep == j] <- temp1$TimeStep[temp1$Dispersal == dispV[o] & temp1$Patch_remove == removeV[w] & temp1$Species == i & temp1$Rep == j]
-        
-        ETime.df$TimeStep[ETime.df$Scale == "Local" & ETime.df$Dispersal == dispV[o] & ETime.df$Patch_remove == removeV[w] & ETime.df$Species == i & ETime.df$Rep == j] <- temp2.1$Mean_TimeStep[temp2.1$Dispersal == dispV[o] & temp2.1$Patch_remove == removeV[w] & temp2.1$Species == i & temp2.1$Rep == j]
-      }
-    }	
-  }
-}
-
-#getting rid of the data points that I called '-1' up above in the histogram
-ETime2.df <- ETime.df
-ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$TimeStep == -1] <- NA
-
-#histogram - need to reset ylim each time, set so that there is a bar for every time step  
-par(mfrow=c(length(removeV),length(dispV)))
-for(w in 1:length(removeV)){
-  for(o in 1:length(dispV)){
-    hist(ETime2.df$TimeStep[ETime2.df$Scale == "Regional" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w]], 
-         xlab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,length(sampleV)+1), ylim = c(0,50),
-    breaks = seq(1,length(sampleV)+1, by = 20))
-    
-  }
-}
-ETimeSum.df <- summarise(group_by(ETime2.df, Dispersal, Patch_remove, Species, Scale), Mean_TimeStep = mean(TimeStep, na.rm=T), SD_TimeStep = sd(TimeStep, na.rm = T))
-
-par(mfrow=c(length(removeV),length(dispV)))
-for(w in 1:length(removeV)){
-  for(o in 1:length(dispV)){
-    plot(ETimeSum.df$Mean_TimeStep[ETimeSum.df$Scale == "Regional" & ETimeSum.df$Dispersal == dispV[o] & ETimeSum.df$Patch_remove == removeV[w]], 
-         ylab = "Time to go Extinct", main = paste("Dispersal Level", dispV[o], removeV[w]), xlim = c(1,nSpecies), ylim = c(0,length(sampleV)+5),
-         type = 'l')
-    
-  }
-}
-
-
-
-
-###Odd foray into box plots that didn't really work###
-#makes the boxes transparent (the last 2 digits of the hex code define the level of transparency)
-stripchart(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
-           ylab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]),
-           col=c("light blue"), vertical = TRUE, pch = 19)
-#col=c("pink","light blue","pink","light blue","pink","light blue"), vertical = TRUE, pch = 19)
-boxplot(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
-        ylab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]), 
-        col=c("light blue"), vertical = TRUE, pch = 19)
-#col=c("#FF003322","#9AC0CD22","#FF003322","#9AC0CD22","#FF003322","#9AC0CD22"), add = TRUE)
-
-par(mfrow=c(length(removeV),length(dispV)))
-for(w in 1:length(removeV)){
-  for(o in 1:length(dispV)){
-    stripchart(ETime2.df$TimeStep[ETime2.df$Scale == "Local" & ETime2.df$Dispersal == dispV[o] & ETime2.df$Patch_remove == removeV[w] & ETime2.df$Rep == 1],
-               xlab="Time to go Extinct",main = paste("Dispersal Level", dispV[o], removeV[w]),
-               col=c("light blue"), vertical = FALSE, pch = 19)
-    
-  }
-}
-
-#not sure if need the line below, because the one time that i tested things i saw that there were 4 extinctions...and when i checked the SR
-#over time plot i saw that there was an extinction in that last time step...(0.05 dispersal, min betweenness, regional)
-#ED_data$LastDebtTime == length(sampleV) - 1 <- NA
-
-#plot below here is no longer relevant, and if did want to use it again - would need to fix it so that the scale was the same for all of them
-require(ggplot2)
-#number of species lost vs time until last extinction plot
-ggplot(ED_data,aes(x=LastDebtTime,y=SRLoss,color=Scale,group=interaction(Scale, Patch_remove, Dispersal, Rep),fill=Scale),alpha=0.1)+
-  geom_point()+ 
-  #geom_line()+
-  #stat_smooth(method = 'lm', formula = y ~ poly(x,2))+
-  stat_smooth(method = 'lm')+
-  #geom_ribbon(aes(ymin=Mean_SRLoss-SD_SRLoss,ymax=Mean_SRLoss+SD_SRLoss),width=0.1)+
-  facet_grid(Dispersal~Patch_remove,scale="free")+
-  #facet_grid(Scale~Patch_remove,scale="free")+
-  theme_bw(base_size = 18)+ #gets rid of grey background
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
-
-
-
-
-                         
+     
 
 
