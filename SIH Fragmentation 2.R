@@ -378,9 +378,9 @@ for(r in 1:reps){
       
       #below: adds the local, mean data to the big data frame.
       
-      ED_data$LastDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_SRlast.df$Debt_t)
+      ED_data$LastDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_SRlast.df$Debt_t, na.rm = T)
       
-      ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_loss2$Loss)
+      ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
       
       #Individual Patch Type Metrics
       IndivPatch$Betweenness[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j] & IndivPatch$Scale=="Regional"] <- btw
