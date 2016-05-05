@@ -75,6 +75,10 @@ IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(di
                          Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom*2),
                          Patch = rep(1:numCom),Scale=rep(c("Local","Regional"), each = numCom), Betweenness = NA, LastExtTime = NA)
 
+EffectiveDiv_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*3),
+                  Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
+                  TimeStep = rep(1:length(sampleV)),Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), ExpShannon = NA)
+
 #start of simulations
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -226,18 +230,22 @@ for(r in 1:reps){
             com_data[is.na(com_data)] = 0
             renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
             renyi_avgshannon_a <- mean(renyi(com_data,scales=1, hill=T))
-            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                         Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
+            #Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                         #Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
-            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                         Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
+            #Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                         #Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
             Biomass_Time$EffDivBetaMult[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
                                              Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
-            Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                          Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
-            
-          
+            #Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                         # Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
+                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Alpha"] <- renyi_avgshannon_a
+            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
+                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Gamma"] <- renyi_shannon_gamma
+            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
+                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Beta"] <- renyi_shannon_gamma/renyi_avgshannon_a
           }
         } 
 
