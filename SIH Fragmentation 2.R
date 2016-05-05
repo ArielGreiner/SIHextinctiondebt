@@ -68,7 +68,7 @@ SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*len
 Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
                               Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
-                              TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), ExpShannon = NA, ExpShannonBeta = NA, Biomass = NA)
+                              TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), EffDiv = NA, EffDivBetaMult = NA, EffDivBetaAdd = NA, Biomass = NA)
 
 IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)*2),
                          Dispersal=rep(dispV, each = length(removeV)*numCom*2),
@@ -224,15 +224,20 @@ for(r in 1:reps){
           if(counter < 1021){
             com_data <- Abund[,,counter] 
             com_data[is.na(com_data)] = 0
-            renyi_avgshannon_a <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
-            Biomass_Time$ExpShannon[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+            renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
+            renyi_avgshannon_a <- mean(renyi(com_data,scales=1, hill=T))
+            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
                                          Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
-            Biomass_Time$ExpShannon[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+            Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
                                          Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma
-            Biomass_Time$ExpShannonBeta[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+            Biomass_Time$EffDivBetaMult[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
+            Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
+                                          Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+            
+          
           }
         } 
 
@@ -628,6 +633,53 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
   geom_ribbon(aes(ymin=Mean_Proportion-SD_Proportion,ymax=Mean_Proportion+SD_Proportion), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
   
+##Plotting Biomass
+require(ggplot2)
+#Raw Biomass Plot
+ggplot(Biomass_Time,aes(x=TimeStep,y=Biomass,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
+  #geom_point()+ 
+  geom_line()+
+  scale_x_log10()+
+  #geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
+  xlab("Time Step")+
+  ylab("Biomass")+
+  geom_vline(x=20)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#binning the biomass data because otherwise just see massively fluctuating sine waves
+BiomassTime_Bin <- Biomass_Time %>%
+  group_by(Dispersal, Patch_remove, Scale, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/5)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Rep)%>%
+  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_EffDiv = mean(EffDiv, na.rm = T), Mean_EffDivBetaMult = mean(EffDivBetaMult, na.rm = T)) %>%
+  group_by(Dispersal, Patch_remove, Scale, TimeStepRound) %>%
+  summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_EffDivFinal = mean(Mean_EffDiv, na.rm = T), SD_EffDiv = sd(Mean_EffDiv, na.rm = T), Mean_EffDivBetaMultFinal = mean(Mean_EffDivBetaMult, na.rm = T), SD_EffDivBetaMult = sd(Mean_EffDivBetaMult, na.rm = T))
+
+ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_BiomassFinal,color=Scale,fill = Scale))+
+  xlab("(Binned) Time Step")+
+  ylab("Biomass")+
+  geom_line()+
+  scale_x_log10()+
+  facet_grid(Dispersal~Patch_remove)+	  
+  geom_vline(x=20/5)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  geom_ribbon(aes(ymin=Mean_BiomassFinal-SD_Biomass,ymax=Mean_BiomassFinal+SD_Biomass), alpha = 0.2, color = NA)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_EffDivFinal,color=Scale,fill = Scale))+
+  xlab("(Binned) Time Step")+
+  ylab("Effective Diversity")+
+  geom_line()+
+  scale_x_log10()+
+  facet_grid(Dispersal~Patch_remove)+	  
+  geom_vline(x=20/5)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  geom_ribbon(aes(ymin=Mean_EffDivFinal-SD_EffDiv,ymax=Mean_EffDivFinal+SD_EffDiv), alpha = 0.2, color = NA)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
 ###old plots
