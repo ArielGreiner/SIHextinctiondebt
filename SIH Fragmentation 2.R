@@ -64,11 +64,16 @@ SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*len
         Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
         TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
+
 Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
                               Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
                               Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
                               TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), ExpShannon = NA, ExpShannonBeta = NA, Biomass = NA)
 
+IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)*2),
+                         Dispersal=rep(dispV, each = length(removeV)*numCom*2),
+                         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom*2),
+                         Patch = rep(1:numCom),Scale=rep(c("Local","Regional"), each = numCom), Betweenness = NA, LastExtTime = NA)
 
 #start of simulations
 #initialize community network use rewire for lattice or small world - use random for random
@@ -277,7 +282,7 @@ for(r in 1:reps){
                                 Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       
       Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- R_Bmass
+                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- rowMeans(L_Bmass_sep, na.rm = T)
       
       
       
@@ -348,7 +353,9 @@ for(r in 1:reps){
       ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Loss
       
       
-      L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
+      #L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
+      #^ Modified 5.5.2016 because otherwise for the deleted patches, the local total SR loss and local last extinction time were 'wrong'
+      L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums)))
       
       ldebt.f<-function(x){sum(x!=last(x))}
       
@@ -375,6 +382,10 @@ for(r in 1:reps){
       
       ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_loss2$Loss)
       
+      #Individual Patch Type Metrics
+      IndivPatch$Betweenness[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j] & IndivPatch$Scale=="Regional"] <- btw
+      
+      IndivPatch$LastExtTime[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j] & IndivPatch$Scale=="Regional"] <- L_SRlast.df$Debt_t
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
