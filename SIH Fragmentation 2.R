@@ -642,7 +642,7 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 ##Individual Patch Level Stuff
-ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=interaction(Scale, Rep),group=interaction(Scale, Patch_remove, Dispersal, Rep)))+ 
+ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=Rep,group=interaction(Patch_remove, Dispersal, Rep)))+ 
   #scale_color_brewer("Dispersal Level", palette = "BrBG")+
   geom_point(aes(shape = factor(Patch_remove)), size = 4)+
   #scale_x_log10()+
@@ -653,7 +653,7 @@ ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=interaction(Scale, Rep),
   ylab("Time Until Last Extinction")+
   #geom_errorbar(aes(ymin=Lowest_PercentLoss,ymax=Highest_PercentLoss),width=0.1, linetype = 2)+
   #geom_errorbarh(aes(xmin=Lowest_LastDebtTime,xmax=Highest_LastDebtTime),width=0.1, linetype = 2)+
-  facet_grid(Patch_remove~Dispersal)+	  
+  facet_grid(Dispersal~Patch_remove)+	  
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
