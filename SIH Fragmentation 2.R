@@ -644,10 +644,10 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
 ##Individual Patch Level Stuff
 ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=Rep,group=interaction(Patch_remove, Dispersal, Rep)))+ 
   #scale_color_brewer("Dispersal Level", palette = "BrBG")+
-  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #geom_point(aes(shape = factor(Patch_remove)), size = 4)+
   #scale_x_log10()+
   #scale_shape_manual(values=c(25,19, 17))+
-  scale_shape_manual(values=c(15,19, 17))+
+  #scale_shape_manual(values=c(15,19, 17))+
   #scale_alpha_discrete(range = c(0.4,1))+
   xlab("Betweenness")+
   ylab("Time Until Last Extinction")+
