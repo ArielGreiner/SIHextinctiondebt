@@ -231,7 +231,7 @@ for(r in 1:reps){
             renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
             renyi_avgshannon_a <- mean(renyi(com_data,scales=1, hill=T))
             Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Local"] <- renyi_avgshannon_a_mult
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
             Biomass_Time$EffDiv[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
@@ -239,13 +239,13 @@ for(r in 1:reps){
             Biomass_Time$EffDivBetaMult[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
                         Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
             Biomass_Time$EffDivBetaAdd[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma/renyi_avgshannon_a
+                        Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$TimeStep == counter & Biomass_Time$Scale=="Regional"] <- renyi_shannon_gamma - renyi_avgshannon_a
             EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
                                            EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Alpha"] <- renyi_avgshannon_a
             EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
                                            EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Gamma"] <- renyi_shannon_gamma
             EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Beta"] <- renyi_shannon_gamma/renyi_avgshannon_a
+                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == counter & EffectiveDiv_Time$Metric=="Beta"] <- renyi_shannon_gamma - renyi_avgshannon_a
           }
         } 
 
@@ -642,9 +642,10 @@ ggplot(MetaDynAvg_Bin,aes(x=TimeStepRound,y=Mean_Proportion,color=Dynamic,fill =
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 ##Individual Patch Level Stuff
-ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=Rep,group=interaction(Patch_remove, Dispersal, Rep)))+ 
+ggplot(IndivPatch,aes(x=Betweenness,y=LastExtTime,color=factor(Rep),group=interaction(Patch_remove, Dispersal, Rep)))+ 
   #scale_color_brewer("Dispersal Level", palette = "BrBG")+
   #geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  geom_point()+
   #scale_x_log10()+
   #scale_shape_manual(values=c(25,19, 17))+
   #scale_shape_manual(values=c(15,19, 17))+
@@ -705,6 +706,36 @@ ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_EffDivFinal,color=Scale,fill =
   geom_ribbon(aes(ymin=Mean_EffDivFinal-SD_EffDiv,ymax=Mean_EffDivFinal+SD_EffDiv), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
+  #Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+  #Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+  #TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), 
+  #EffDiv = NA, EffDivBetaMult = NA, EffDivBetaAdd = NA, Biomass = NA)
+
+#EffectiveDiv_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*3),
+  #Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
+  #TimeStep = rep(1:length(sampleV)),Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), ExpShannon = NA)
+
+EffectiveDiv_Bin <- EffectiveDiv_Time %>%
+  group_by(Dispersal, Patch_remove, Metric, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/5)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Metric, Rep)%>%
+  summarize(Mean_ExpShannon = mean(ExpShannon, na.rm = T)) %>%
+  group_by(Dispersal, Patch_remove, Metric, TimeStepRound) %>%
+  summarize(SD_ExpShannon = sd(Mean_ExpShannon, na.rm = T), Mean_ExpShannonFinal = mean(Mean_ExpShannon, na.rm = T))
+
+ggplot(EffectiveDiv_Bin,aes(x=TimeStepRound,y=Mean_ExpShannonFinal,color=Metric,fill = Metric))+
+  xlab("(Binned) Time Step")+
+  ylab("Effective Diversity")+
+  geom_line()+
+  scale_x_log10()+
+  facet_grid(Dispersal~Patch_remove)+	  
+  geom_vline(x=20/5)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  geom_ribbon(aes(ymin=Mean_ExpShannonFinal-SD_ExpShannon,ymax=Mean_ExpShannonFinal+SD_ExpShannon), alpha = 0.2, color = NA)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+
 #Fourier Transform Plot (plotted for 1 replicate)
 plot.frequency.spectrum <- function(X.k, xlimits=c(0,length(X.k))) {
   plot.data  <- cbind(0:(length(X.k)-1), Mod(X.k))
@@ -716,7 +747,7 @@ plot.frequency.spectrum <- function(X.k, xlimits=c(0,length(X.k))) {
        xlim=xlimits, ylim=c(0,max(Mod(plot.data[,2]))))
 }
 
-par(mfrow=c(length(removeV),length(dispV)))
+par(mfrow=c(length(dispV),length(removeV)))
 for(i in 1:length(dispV)){
   for(j in 1:length(removeV)){
     plot.frequency.spectrum(fft(Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Local"]))
