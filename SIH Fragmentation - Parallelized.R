@@ -42,9 +42,9 @@ sampleV<-seq(252000,Tmax,by=2000) #controls which time points are sampled from, 
 removeV<-c("Max betweenness","Min betweenness","Random")
 
 #Patrick's data frames, left-over from when all patches were being deleted sequentially 
-SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
+#SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
 
-Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
+Component_data_reps<-data.frame(Rep=rep(1:reps),Dispersal=rep(dispV,each=reps),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps),Component_num=NA,Component_size=NA, Component_range=NA)
 
 #Data frame for recording the proportion of biomass accounted for by each of species sorting, mass effects and base growth at each sampled time point 
 Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3*length(sampleV)),Dispersal=rep(dispV,each=reps*3*length(sampleV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*3*length(sampleV)),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")), each = length(sampleV)),TimeStep = rep(1:length(sampleV)),Proportion=NA) 
@@ -114,7 +114,7 @@ for(r in 1:reps){
       R0<-R<-rep(10*(nSpecies/10),numCom)
       
       Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA)
-      Species_data<-array(NA,dim=c(length(sampleV),nSpecies,2),dimnames = list(sampleV,1:nSpecies,c("Abundance","Occupancy")))
+      #Species_data<-array(NA,dim=c(length(sampleV),nSpecies,2),dimnames = list(sampleV,1:nSpecies,c("Abundance","Occupancy")))
       Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
       Components<-data.frame(Number_components=rep(NA, length(sampleV)),Component_size=NA,Component_envt_range=NA)
       
@@ -185,8 +185,8 @@ for(r in 1:reps){
             
             #Meta_dyn$Patches[sample_id]<-1
             
-            Species_data[sample_id,,1]<-N
-            Species_data[sample_id,,2]<-N>0
+            #Species_data[sample_id,,1]<-N
+            #Species_data[sample_id,,2]<-N>0
           } else{
             Prod[as.numeric(rownames(N)),,sample_id] <- eff*consume*R*N
             Abund[as.numeric(rownames(N)),,sample_id] <- N
@@ -221,8 +221,8 @@ for(r in 1:reps){
             
             #Meta_dyn$Patches[sample_id]<-nrow(N)
             
-            Species_data[sample_id,,1]<-colSums(N)
-            Species_data[sample_id,,2]<-colSums(N>0)
+            #Species_data[sample_id,,1]<-colSums(N)
+            #Species_data[sample_id,,2]<-colSums(N>0)
           }
           
           #Diversity Metrics
@@ -281,9 +281,6 @@ for(r in 1:reps){
           R0<-R0[-patch.delete]
         }  
       } 
-      #the arrays didn't work, possible that they were too big
-      #L_Bmass[j,i,]<-colMeans(apply(Abund,3,rowSums),na.rm=T)
-      #L_Bmass_sep[j,i,,]<-data.frame(t(apply(Abund,3,rowSums)))
       L_Bmass<-colMeans(apply(Abund,3,rowSums),na.rm=T)
       L_Bmass_sep<-data.frame(t(apply(Abund,3,rowSums)))
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
@@ -326,56 +323,16 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
       ED_data$Mean_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(L_Bmass_adel)
       ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(localcv, na.rm = T)
       ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-cv(R_Bmass_adel)
-      
-      #commented out the section below because set drop_length = 0 and so I believe that I would get an error message, fix if necessary later
-      #CVdf<-cbind(L_Bmass_sep,data.frame(R_Bmass=R_Bmass,Patches=rep(30:1,each=drop_length/2000))) %>%
-      #group_by(Patches) %>%
-      #summarise_each(funs(cv))
-      # L_CV<-rowMeans(CVdf[,2:31],na.rm=T)
-      #R_CV<-CVdf$R_Bmass
-      
-      # SIH_data_means<-data.frame(R_SR=R_SR,L_SR=L_SR,L_Bmass=L_Bmass,Patches=numCom-colMeans(apply(is.na(Abund),3,colSums))) %>%
-      #   group_by(Patches) %>%
-      #   summarise_each(funs(mean))
-      # SIH_data_means$R_CV <- NA #R_CV
-      # SIH_data_means$L_CV<-NA #L_CV
-      # 
-      Component_data_means<-data.frame(Patches=numCom-colMeans(apply(is.na(Abund),3,colSums)),Component_num=Components$Number_components,Component_size=Components$Component_size,Component_range=Components$Component_envt_range)%>%
-        group_by(Patches) %>%
-        summarise_each(funs(mean))
-      # 
-      # SIH_data_reps[SIH_data_reps$Rep==r & SIH_data_reps$Dispersal==dispV[i] & 
-      #                 SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-SIH_data_means
-      Component_data_reps[SIH_data_reps$Rep==r &
-                            SIH_data_reps$Dispersal==dispV[i] & SIH_data_reps$Patch_remove==removeV[j],-c(1:3)]<-Component_data_means
+
+#Random coding note: "Component_data_reps[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]" lets you add to all of the columns not mentioned that aren't the first 3 columns (which are rep, dispersal and patch removal columns)
+     Component_data_reps$Component_num[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),1]) 
+     Component_data_reps$Component_envt_range[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),3]) 
+     Component_data_reps$Component_size[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),2]) 
       
       Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta_dyn$Species_sorting
       Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta_dyn$Mass_effects
       Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Base growth"] <- Meta_dyn$Base_growth
-      
-##leftover code from when all patches were being deleted...
-      #for(o in 1:nSpecies){
-        #ETime_Regionaldata$TimeStep[ETime_Regionaldata$Rep==r & ETime_Regionaldata$Dispersal==dispV[i] & ETime_Regionaldata$Patch_remove==removeV[j] & ETime_Regionaldata$Species==o]<- max(which((apply(Abund,3,colSums, na.rm=T)>0)[o,]))
-      #}
-      
-      #L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
-      
-      #LocalSR_timestep <- L_SR.df
-      
-      #keeping track of when each species goes extinct for the last time, in each patch
-      #ETime.df <- data.frame(Species = rep(1:nSpecies, each = numCom), Patches = rep(1:numCom), TimeStep = NA)
-     # Ext_Time <- function(x){temp <- max(which(x>0))+1
-     # if(temp==min(which(is.na(x)))){ #if the extinction time is when the patch is deleted, ignore this extinction
-     #   temp <- NA
-     # } 
-     # return(temp)
-    #  }
-      #for(o in 1:nSpecies){
-        #ETime.df$TimeStep[ETime.df$Species==o] <- apply(Abund[,o,],1,Ext_Time)
-        #ETime_Localdata$TimeStep[ETime_Localdata$Rep == r & ETime_Localdata$Dispersal==dispV[i] & ETime_Localdata$Patch_remove==removeV[j] & ETime_Localdata$Species == o] <- apply(Abund[,o,],1,Ext_Time)
-      #}
-      
-      
+            
       #for species richness over time plots
       SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Regional"]<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Local"]<-rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
