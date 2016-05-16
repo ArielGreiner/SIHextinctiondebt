@@ -114,6 +114,7 @@ for(r in 1:reps){
       
       Meta_dyn<-data.frame(Species_sorting=rep(NA,length(sampleV)),Mass_effects=NA,Base_growth=NA)
       Species_data<-array(NA,dim=c(length(sampleV),nSpecies,2),dimnames = list(sampleV,1:nSpecies,c("Abundance","Occupancy")))
+      Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
       Components<-data.frame(Number_components=rep(NA, length(sampleV)),Component_size=NA,Component_envt_range=NA)
       
       
@@ -235,23 +236,14 @@ for(r in 1:reps){
             
             regional_data <- colSums(com_data)
             renyi_shannon_gamma <- renyi(regional_data,scales=1, hill=T)
+                                
+            #Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma"))) 
+            Effdiv_data[sample_id,1] <- renyi_avgshannon_a
+            Effdiv_data[sample_id,2] <- renyi_avgshannon_a_mult
+            Effdiv_data[sample_id,3] <- renyi_shannon_gamma - renyi_avgshannon_a
+            Effdiv_data[sample_id,4] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
+            Effdiv_data[sample_id,5] <- renyi_shannon_gamma
                                          
-            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Alpha"] <- renyi_avgshannon_a
-            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Gamma"] <- renyi_shannon_gamma
-            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Beta"] <- renyi_shannon_gamma - renyi_avgshannon_a
-
-EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Alpha"] <- renyi_avgshannon_a_mult
-            EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Gamma"] <- renyi_shannon_gamma
-            EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & 
-                                           EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$TimeStep == sample_id & EffectiveDiv_Time$Metric=="Beta"] <- renyi_shannon_gamma/renyi_avgshannon_a_mult
-
-
-
           }
         } 
         
@@ -301,9 +293,18 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
                              Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       
       Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- rowMeans(L_Bmass_sep, na.rm = T)
+                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- R_Bmass #rowMeans(L_Bmass_sep, na.rm = T)
+      #Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
       
-      
+      EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Alpha"] <- Effdiv_data[,1]
+            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Gamma"] <- Effdiv_data[,5]
+            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Beta"] <- Effdiv_data[,3]
+
+EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Alpha"] <- Effdiv_data[,2]
+
+EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Gamma"] <- Effdiv_data[,5]
+
+EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Beta"] <- Effdiv_data[,4]
       
       cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
       
