@@ -12,9 +12,9 @@ require(doParallel)
 require(foreach)
 
 #set up parallel
-#cl <- makeCluster(detectCores())
-#registerDoParallel(cl)
-#getDoParWorkers()
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+getDoParWorkers()
 
 reps<- 1 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
@@ -89,7 +89,36 @@ EffectiveDiv_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(re
 #start of simulations
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
-for(r in 1:reps){
+SIH_frag<- function(){
+	
+Component_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)),Component_num=NA,Component_size=NA, Component_range=NA)
+
+#Data frame for recording the proportion of biomass accounted for by each of species sorting, mass effects and base growth at each sampled time point 
+Meta_dyn_noreps<- data.frame(Rep=r,Dispersal=rep(dispV,each=3*length(sampleV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*3*length(sampleV)),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")), each = length(sampleV)),TimeStep = rep(1:length(sampleV)),Proportion=NA) 
+
+#Data frame recording the time at which the last extinction happens + the number of extinctions that happen, in each scenario
+ED_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=2),
+                    Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*2),Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA)
+
+SR_Time_noreps <- data.frame(Rep=r,
+                      Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+                      Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+                      TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), SR = NA)
+
+Biomass_Time_noreps <- data.frame(Rep=r,
+                           Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
+                           Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
+                           TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), Biomass = NA)
+
+IndivPatch_noreps <- data.frame(Rep=r,
+                         Dispersal=rep(dispV, each = length(removeV)*numCom),
+                         Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom),
+                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA)
+
+EffectiveDiv_Time_noreps <- data.frame(Rep=r,
+                                Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
+                                TimeStep = rep(1:length(sampleV)),Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), ExpShannon = NA, ExpShannonMult = NA)
+	
   for(i in 1:length(dispV)){
     disp<-dispV[i]
     rand<-randV[1]
@@ -293,22 +322,22 @@ for(r in 1:reps){
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums, na.rm=T))
       
-      Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
+      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & 
+                             Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       
-      Biomass_Time$Biomass[Biomass_Time$Rep==r & Biomass_Time$Dispersal==dispV[i] & 
-                             Biomass_Time$Patch_remove==removeV[j] & Biomass_Time$Scale=="Regional"] <- R_Bmass #rowMeans(L_Bmass_sep, na.rm = T)
+      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & 
+                             Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Regional"] <- R_Bmass #rowMeans(L_Bmass_sep, na.rm = T)
       #Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
       
-      EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Alpha"] <- Effdiv_data[,1]
-            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Gamma"] <- Effdiv_data[,5]
-            EffectiveDiv_Time$ExpShannon[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Beta"] <- Effdiv_data[,3]
+      EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Alpha"] <- Effdiv_data[,1]
+            EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Gamma"] <- Effdiv_data[,5]
+            EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Beta"] <- Effdiv_data[,3]
 
-EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Alpha"] <- Effdiv_data[,2]
+EffectiveDiv_Time_noreps$ExpShannonMult[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Alpha"] <- Effdiv_data[,2]
 
-EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Gamma"] <- Effdiv_data[,5]
+EffectiveDiv_Time_noreps$ExpShannonMult[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Gamma"] <- Effdiv_data[,5]
 
-EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Beta"] <- Effdiv_data[,4]
+EffectiveDiv_Time_noreps$ExpShannonMult[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Beta"] <- Effdiv_data[,4]
 
 	  cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
 	  
@@ -325,23 +354,23 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
       
       
       
-      ED_data$Mean_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-mean(R_Bmass_adel)
-      ED_data$Mean_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(L_Bmass_adel)
-      ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(localcv, na.rm = T)
-      ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-cv(R_Bmass_adel)
+      ED_data_noreps$Mean_Bmass[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Regional"]<-mean(R_Bmass_adel)
+      ED_data_noreps$Mean_Bmass[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Local"]<-mean(L_Bmass_adel)
+      ED_data_noreps$CV_Bmass[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Local"]<-mean(localcv, na.rm = T)
+      ED_data_noreps$CV_Bmass[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Regional"]<-cv(R_Bmass_adel)
 
-#Random coding note: "Component_data_reps[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]" lets you add to all of the columns not mentioned that aren't the first 3 columns (which are rep, dispersal and patch removal columns)
-     Component_data_reps$Component_num[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),1]) 
-     Component_data_reps$Component_envt_range[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),3]) 
-     Component_data_reps$Component_size[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),2]) 
+#Random coding note: "Component_data_noreps[Component_data_noreps$Rep==r & Component_data_noreps$Dispersal==dispV[i] & Component_data_noreps$Patch_remove==removeV[j],-c(1:3)]" lets you add to all of the columns not mentioned that aren't the first 3 columns (which are rep, dispersal and patch removal columns)
+     Component_data_noreps$Component_num[Component_data_noreps$Rep==r & Component_data_noreps$Dispersal==dispV[i] & Component_data_noreps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),1]) 
+     Component_data_noreps$Component_envt_range[Component_data_noreps$Rep==r & Component_data_noreps$Dispersal==dispV[i] & Component_data_noreps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),3]) 
+     Component_data_noreps$Component_size[Component_data_noreps$Rep==r & Component_data_noreps$Dispersal==dispV[i] & Component_data_noreps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),2]) 
       
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta_dyn$Species_sorting
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta_dyn$Mass_effects
-      Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Base growth"] <- Meta_dyn$Base_growth
+      Meta_dyn_noreps$Proportion[Meta_dyn_noreps$Rep==r & Meta_dyn_noreps$Dispersal==dispV[i] & Meta_dyn_noreps$Patch_remove==removeV[j] & Meta_dyn_noreps$Dynamic=="Species sorting"] <- Meta_dyn$Species_sorting
+      Meta_dyn_noreps$Proportion[Meta_dyn_noreps$Rep==r & Meta_dyn_noreps$Dispersal==dispV[i] & Meta_dyn_noreps$Patch_remove==removeV[j] & Meta_dyn_noreps$Dynamic=="Mass effects"] <- Meta_dyn$Mass_effects
+      Meta_dyn_noreps$Proportion[Meta_dyn_noreps$Rep==r & Meta_dyn_noreps$Dispersal==dispV[i] & Meta_dyn_noreps$Patch_remove==removeV[j] & Meta_dyn_noreps$Dynamic=="Base growth"] <- Meta_dyn$Base_growth
             
       #for species richness over time plots
-      SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Regional"]<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
-      SR_Time$SR[SR_Time$Rep==r & SR_Time$Dispersal==dispV[i] & SR_Time$Patch_remove==removeV[j] & SR_Time$Scale=="Local"]<-rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
+      SR_Time_noreps$SR[SR_Time_noreps$Rep==r & SR_Time_noreps$Dispersal==dispV[i] & SR_Time_noreps$Patch_remove==removeV[j] & SR_Time_noreps$Scale=="Regional"]<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
+      SR_Time_noreps$SR[SR_Time_noreps$Rep==r & SR_Time_noreps$Dispersal==dispV[i] & SR_Time_noreps$Patch_remove==removeV[j] & SR_Time_noreps$Scale=="Local"]<-rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
       #SR_overtime[j,i,] <- rowMeans(t(apply((Abund>0),3,rowSums, na.rm=T)))
       
       ##Dataframe dealing with time to last extinction and SR lost 
@@ -350,9 +379,9 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
       R_lastdebt<-R_SR.df%>%
         summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
       
-      ED_data$LastDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Debt_t
+      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Debt_t
       
-      ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-R_lastdebt$Loss
+      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Loss
       
       
       #L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
@@ -374,18 +403,33 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
       
       #below: adds the local, mean data to the big data frame.
       
-      ED_data$LastDebtTime[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_SRlast.df$Debt_t, na.rm = T)
+      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Local"] <- mean(L_SRlast.df$Debt_t, na.rm = T)
       
-      ED_data$SRLoss[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
+      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
       
       #Individual Patch Type Metrics
-      IndivPatch$Betweenness[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j]] <- btw
+      IndivPatch_noreps$Betweenness[IndivPatch_noreps$Rep==r & IndivPatch_noreps$Dispersal==dispV[i] & IndivPatch_noreps$Patch_remove==removeV[j]] <- btw
       
-      IndivPatch$LastExtTime[IndivPatch$Rep==r & IndivPatch$Dispersal==dispV[i] & IndivPatch$Patch_remove==removeV[j]] <- L_SRlast.df$Debt_t
+      IndivPatch_noreps$LastExtTime[IndivPatch_noreps$Rep==r & IndivPatch_noreps$Dispersal==dispV[i] & IndivPatch_noreps$Patch_remove==removeV[j]] <- L_SRlast.df$Debt_t
     }}
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
+  return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, SR_Time_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
 }
+
+#run simulation function in parallel
+Sim_data_parallel<-foreach(r = 1:reps,.packages=c("igraph","dplyr","tidyr","vegan","data.table")) %dopar% SIH_frag()
+for(r in 1:reps){
+  Sim_data<-Sim_data_parallel[[r]]
+  Component_data_reps[Component_data_reps$Rep==r,]<-Sim_data[[1]]
+  Meta_dyn_reps[Meta_dyn_reps$Rep==r,]<-Sim_data[[2]]
+  ED_data[ED_data$Rep==r,]<-Sim_data[[3]]
+  SR_Time[SR_Time$Rep==r,]<-Sim_data[[4]]
+  Biomass_Time[Biomass_Time$Rep==r,]<-Sim_data[[5]]
+  IndivPatch[IndivPatch$Rep==r,]<-Sim_data[[6]]
+  EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[7]]
+}  
+
 
 #binning and summarizing SR_Time dataframe so as to calculate mean time to extinction and make the 'wave of extinction style plots'
 MeanExtTimeBin <- SR_Time %>%
@@ -532,7 +576,9 @@ for(o in 1:length(dispV)){
       ED_data$PercentLoss[ED_data$Scale == "Local" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][length(sampleV)])/Numat20 
     }
   }	
+return(list(Meta_dyn_r1,SIH_data_r1,Component_data_r1))  
 }
+
 
 EDdata_avg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss = range(SRLoss, na.rm = T)[1], Highest_SRLoss = range(SRLoss, na.rm = T)[2],
                          Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T),Lowest_LastDebtTime = range(LastDebtTime, na.rm = T)[1], Highest_LastDebtTime = range(LastDebtTime, na.rm = T)[2], Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), 
