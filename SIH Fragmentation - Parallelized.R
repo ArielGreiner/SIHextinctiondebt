@@ -43,6 +43,7 @@ removeV<-c("Max betweenness","Min betweenness","Random")
 
 #Patrick's data frames, left-over from when all patches were being deleted sequentially 
 SIH_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Regional_SR=NA,Local_SR=NA,Biomass=NA,Regional_CV=NA,Local_CV=NA)
+
 Component_data_reps<-data.frame(Rep=rep(1:reps,each=(numCom-0)),Dispersal=rep(dispV,each=reps*(numCom-0)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*(numCom-0)),Patches=NA,Component_num=NA,Component_size=NA, Component_range=NA)
 
 #Data frame for recording the proportion of biomass accounted for by each of species sorting, mass effects and base growth at each sampled time point 
@@ -50,7 +51,7 @@ Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3*length(sampleV)),Dispersal=rep(
 
 #Data frame recording the time at which the last extinction happens + the number of extinctions that happen, in each scenario
 ED_data<-data.frame(Rep=rep(1:reps,each=2),Dispersal=rep(dispV,each=reps*2),
-                    Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*2),Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA)
+                    Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*2),Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA)
 
 #old extinction debt dataframes from when all 30 patches were being deleted sequentially, left in just in case come in use later 
 #ETime_Localdata<-data.frame(Rep=rep(1:reps,each = length(dispV)*length(removeV)*numCom*nSpecies),
@@ -305,8 +306,26 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
 EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Gamma"] <- Effdiv_data[,5]
 
 EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Dispersal==dispV[i] & EffectiveDiv_Time$Patch_remove==removeV[j] & EffectiveDiv_Time$Metric=="Beta"] <- Effdiv_data[,4]
+
+	  cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
+	  
+      L_Bmass_sep_adel <- t(apply(Abund,3,rowSums))[-c(1:20),]
+      L_Bmass_adel <- colMeans(apply(Abund,3,rowSums),na.rm=T)[-c(1:20)]
+      localcv <- vector(length = numCom)
+      #take the cv of each local community, from patch deletion to the end
+      for(w in 1:numCom){
+      	localcv[w] <- cv(L_Bmass_sep_adel[,w])
+      }
+      #then take the average of all of those (see below)
+     
+      R_Bmass_adel<-apply(Abund,3,sum,na.rm=T)[-c(1:20)]
       
-      cv<-function(x){sd(x,na.rm=T)/mean(x,na.rm=T)}
+      
+      
+      ED_data$Mean_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-mean(R_Bmass_adel)
+      ED_data$Mean_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(L_Bmass_adel)
+      ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Local"]<-mean(localcv, na.rm = T)
+      ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-cv(R_Bmass_adel)
       
       #commented out the section below because set drop_length = 0 and so I believe that I would get an error message, fix if necessary later
       #CVdf<-cbind(L_Bmass_sep,data.frame(R_Bmass=R_Bmass,Patches=rep(30:1,each=drop_length/2000))) %>%
