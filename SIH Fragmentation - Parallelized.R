@@ -8,7 +8,13 @@ require(ggplot2)
 require(tidyr)
 require(data.table)
 require(vegan)
+require(doParallel)
+require(foreach)
 
+#set up parallel
+#cl <- makeCluster(detectCores())
+#registerDoParallel(cl)
+#getDoParWorkers()
 
 reps<- 1 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
@@ -325,9 +331,9 @@ EffectiveDiv_Time$ExpShannonMult[EffectiveDiv_Time$Rep==r & EffectiveDiv_Time$Di
       ED_data$CV_Bmass[ED_data$Rep==r & ED_data$Dispersal==dispV[i] & ED_data$Patch_remove==removeV[j] & ED_data$Scale=="Regional"]<-cv(R_Bmass_adel)
 
 #Random coding note: "Component_data_reps[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]" lets you add to all of the columns not mentioned that aren't the first 3 columns (which are rep, dispersal and patch removal columns)
-     Component_data_reps$Component_num[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),1]) 
-     Component_data_reps$Component_envt_range[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),3]) 
-     Component_data_reps$Component_size[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j],-c(1:3)]<- mean(Components[-c(1:20),2]) 
+     Component_data_reps$Component_num[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),1]) 
+     Component_data_reps$Component_envt_range[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),3]) 
+     Component_data_reps$Component_size[Component_data_reps$Rep==r & Component_data_reps$Dispersal==dispV[i] & Component_data_reps$Patch_remove==removeV[j]]<- mean(Components[-c(1:20),2]) 
       
       Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Species sorting"] <- Meta_dyn$Species_sorting
       Meta_dyn_reps$Proportion[Meta_dyn_reps$Rep==r & Meta_dyn_reps$Dispersal==dispV[i] & Meta_dyn_reps$Patch_remove==removeV[j] & Meta_dyn_reps$Dynamic=="Mass effects"] <- Meta_dyn$Mass_effects
