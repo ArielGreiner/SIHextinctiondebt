@@ -17,17 +17,18 @@ cl <- makeCluster(2)
 registerDoParallel(cl)
 getDoParWorkers()
 
-reps<- 1 #10
+reps<- 4 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 
-nSpeciesMult <- c(7,11,15)
+nSpeciesMult <- c(7,11) #c(7,11,15)
 nPatchDel <- c(5,10,20)
 #nSpecies <- 11
 numCom<-30
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
-dispV <- 0.005
+#dispV <- 0.005
+dispV <- c(0.0005, 0.005, 0.015)
 #dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
