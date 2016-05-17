@@ -12,7 +12,8 @@ require(doParallel)
 require(foreach)
 
 #set up parallel
-cl <- makeCluster(detectCores())
+#cl <- makeCluster(detectCores())
+cl <- makeCluster(2) 
 registerDoParallel(cl)
 getDoParWorkers()
 
@@ -75,12 +76,12 @@ SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*len
 Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2),
                            Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
                            Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
-                           TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), Biomass = NA)
+                           TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), Biomass = NA, IndivBiomass = NA)
 
 IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)),
                          Dispersal=rep(dispV, each = length(removeV)*numCom),
                          Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom),
-                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA)
+                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA, iBiomass = NA)
 
 EffectiveDiv_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*3),
                                 Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
@@ -108,12 +109,12 @@ SR_Time_noreps <- data.frame(Rep=r,
 Biomass_Time_noreps <- data.frame(Rep=r,
                            Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2),
                            Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2),
-                           TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), Biomass = NA)
+                           TimeStep = rep(1:length(sampleV)),Scale=rep(c("Local","Regional"), each = length(sampleV)), Biomass = NA, IndivBiomass = NA)
 
 IndivPatch_noreps <- data.frame(Rep=r,
                          Dispersal=rep(dispV, each = length(removeV)*numCom),
                          Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom),
-                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA)
+                         Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA,iBiomass = NA)
 
 EffectiveDiv_Time_noreps <- data.frame(Rep=r,
                                 Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3),
@@ -325,8 +326,23 @@ EffectiveDiv_Time_noreps <- data.frame(Rep=r,
       Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & 
                              Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       
-      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & 
-                             Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Regional"] <- R_Bmass #rowMeans(L_Bmass_sep, na.rm = T)
+      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Regional"] <- R_Bmass #rowMeans(L_Bmass_sep, na.rm = T)
+      
+      #Average Individual Biomass (regional level)
+      Biomass_Time_noreps$IndivBiomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Regional"] <- colMeans(apply(Abund,3,colSums,na.rm = T))
+      
+      #Average Individual Biomass (local level)
+      ##average individual biomass in each patch at each time point
+      localibiomass <- matrix(nrow = numCom, ncol = length(sampleV))
+for(w in 1:numCom){
+localibiomass[w,] <- colMeans(Abund[w,,])	
+}
+#then average that value over all 30 patches
+Biomass_Time_noreps$IndivBiomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Scale=="Local"] <- colMeans(localibiomass,na.rm=T)
+
+#or average that value over all time steps...
+IndivPatch_noreps$iBiomass[IndivPatch_noreps$Rep==r & IndivPatch_noreps$Dispersal==dispV[i] & IndivPatch_noreps$Patch_remove==removeV[j]] <- rowMeans(localibiomass,na.rm=T)
+      
       #Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
       
       EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Metric=="Alpha"] <- Effdiv_data[,1]
