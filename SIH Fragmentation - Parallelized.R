@@ -430,6 +430,7 @@ for(r in 1:reps){
   EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[7]]
 }  
 
+save(Component_data_reps, Meta_dyn_reps, ED_data, SR_Time, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
 
 #binning and summarizing SR_Time dataframe so as to calculate mean time to extinction and make the 'wave of extinction style plots'
 MeanExtTimeBin <- SR_Time %>%
@@ -576,7 +577,6 @@ for(o in 1:length(dispV)){
       ED_data$PercentLoss[ED_data$Scale == "Local" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Rep == j][length(sampleV)])/Numat20 
     }
   }	
-return(list(Meta_dyn_r1,SIH_data_r1,Component_data_r1))  
 }
 
 
