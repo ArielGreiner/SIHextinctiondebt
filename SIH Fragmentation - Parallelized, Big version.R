@@ -372,9 +372,9 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       R_lastdebt<-R_SR.df%>%
         summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
       
-      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpecies & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Debt_t
+      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Debt_t
       
-      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpecies & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Loss
+      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Loss
       
       
       #L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums, na.rm=T)))
@@ -396,9 +396,9 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       
       #below: adds the local, mean data to the big data frame.
       
-      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpecies & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- mean(L_SRlast.df$Debt_t, na.rm = T)
+      ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- mean(L_SRlast.df$Debt_t, na.rm = T)
       
-      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpecies & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
+      ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
       
       #Individual Patch Type Metrics
       ##need to fix this metric because 'btw' has length 25, doesn't include the missing patches...but it doesn't crash or anything
