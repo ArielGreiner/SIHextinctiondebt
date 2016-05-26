@@ -11,7 +11,7 @@ MeanExtTimeBin <- SR_Time %>%
 
 #log'd version
 #this is figure 3 (4/14/2016)
-ggplot(MeanExtTimeBin,aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
+ggplot(MeanExtTimeBin[MeanExtTimeBin$Species == nSpeciesMult[s] & MeanExtTimeBin$DelPatches==nPatchDel[p],],aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale,alpha = 0.1))+
   geom_line()+
   scale_x_log10()+
   #geom_ribbon(aes(ymin=Mean_NumExt-SD_NumExt,ymax=Mean_NumExt+SD_NumExt),width=0.1,alpha = 0.1)+
@@ -19,6 +19,7 @@ ggplot(MeanExtTimeBin,aes(x=TimeStepRound*5,y=Mean_NumExt,color=Scale,group=inte
   facet_grid(Dispersal~Patch_remove)+
   xlab("Time Step")+
   ylab("Mean Number of Extinctions")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
   geom_vline(x=20)+
@@ -156,13 +157,14 @@ ggplot(MetaDynAvg_Bin[MetaDynAvg_Bin$Species == nSpeciesMult[s] & MetaDynAvg_Bin
 ##Plotting Biomass
 require(ggplot2)
 #Raw Biomass Plot
-ggplot(Biomass_Time,aes(x=TimeStep,y=Biomass,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
+ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPatches == nPatchDel[p],],aes(x=TimeStep,y=Biomass,color=Scale,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
   #geom_point()+ 
   geom_line()+
   scale_x_log10()+
   #geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
   xlab("Time Step")+
   ylab("Biomass")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
   geom_vline(x=20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
@@ -170,6 +172,23 @@ ggplot(Biomass_Time,aes(x=TimeStep,y=Biomass,color=Scale,group=interaction(Scale
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#Biomass and Indiv Biomass on the same plot
+ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPatches == nPatchDel[p],],aes(x=TimeStep,group=interaction(Scale, Patch_remove, Dispersal),fill=Scale, alpha = 0.1))+
+  #geom_point()+ 
+  geom_line(aes(y = Biomass, colour = "light blue")) + geom_line(aes(y = IndivBiomass, colour = "pink")) +   
+  scale_x_log10()+
+  #geom_ribbon(aes(ymin=Mean_SR-SD_SR,ymax=Mean_SR+SD_SR),width=0.1, color = NA)+
+  xlab("Time Step")+
+  ylab("Biomass")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=20)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+###haven't adjusted the plots below here to deal with the extra levels of species richness and patch deletion
 #binning the biomass data because otherwise just see massively fluctuating sine waves
 BiomassTime_Bin <- Biomass_Time %>%
   group_by(Dispersal, Patch_remove, Scale, Rep) %>%
