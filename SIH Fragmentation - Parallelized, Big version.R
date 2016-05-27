@@ -424,9 +424,9 @@ for(r in 1:reps){
   Meta_dyn_reps[Meta_dyn_reps$Rep==r,]<-Sim_data[[2]]
   ED_data[ED_data$Rep==r,]<-Sim_data[[3]]
   #SR_Time[SR_Time$Rep==r,]<-Sim_data[[4]]
-  Biomass_Time[Biomass_Time$Rep==r,]<-Sim_data[[5]]
-  IndivPatch[IndivPatch$Rep==r,]<-Sim_data[[6]]
-  EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[7]]
+  Biomass_Time[Biomass_Time$Rep==r,]<-Sim_data[[4]]
+  IndivPatch[IndivPatch$Rep==r,]<-Sim_data[[5]]
+  EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[6]]
 }  
 
 #save(Component_data_reps, Meta_dyn_reps, ED_data, SR_Time, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
