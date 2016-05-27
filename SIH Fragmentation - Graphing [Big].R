@@ -188,23 +188,23 @@ ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPa
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-###haven't adjusted the plots below here to deal with the extra levels of species richness and patch deletion
 #binning the biomass data because otherwise just see massively fluctuating sine waves
 BiomassTime_Bin <- Biomass_Time %>%
-  group_by(Dispersal, Patch_remove, Scale, Rep) %>%
-  mutate(TimeStepRound = ceiling(TimeStep/5)) %>%
-  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Rep)%>%
-  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_EffDiv = mean(EffDiv, na.rm = T), Mean_EffDivBetaMult = mean(EffDivBetaMult, na.rm = T)) %>%
-  group_by(Dispersal, Patch_remove, Scale, TimeStepRound) %>%
-  summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_EffDivFinal = mean(Mean_EffDiv, na.rm = T), SD_EffDiv = sd(Mean_EffDiv, na.rm = T), Mean_EffDivBetaMultFinal = mean(Mean_EffDivBetaMult, na.rm = T), SD_EffDivBetaMult = sd(Mean_EffDivBetaMult, na.rm = T))
+  group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep)%>%
+  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_IndivBiomass = mean(IndivBiomass, na.rm = T), Mean_SR = mean(SR, na.rm = T)) %>%
+  group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, TimeStepRound) %>%
+  summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_IndivBiomassFinal = mean(Mean_IndivBiomass, na.rm = T), SD_IndivBiomass = sd(Mean_IndivBiomass, na.rm = T), Mean_SRFinal = mean(Mean_SR, na.rm = T), SD_SR = sd(Mean_SR, na.rm = T))
 
+###haven't adjusted the plots below here to deal with the extra levels of species richness and patch deletion, e.g. EffDivFinal moved
 ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_BiomassFinal,color=Scale,fill = Scale))+
   xlab("(Binned) Time Step")+
   ylab("Biomass")+
   geom_line()+
   scale_x_log10()+
   facet_grid(Dispersal~Patch_remove)+	  
-  geom_vline(x=20/5)+
+  geom_vline(x=20/20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_BiomassFinal-SD_Biomass,ymax=Mean_BiomassFinal+SD_Biomass), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
