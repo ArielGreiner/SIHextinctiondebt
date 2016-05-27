@@ -17,12 +17,12 @@ cl <- makeCluster(2)
 registerDoParallel(cl)
 getDoParWorkers()
 
-reps<- 8 #10
+reps<- 16 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 
-nSpeciesMult <- c(7,11) #c(7,11) #c(7,11,15)
+nSpeciesMult <- c(7,11) #c(7,11,15)
 nPatchDel <- c(10,20) #c(5,10,20)
 #nSpecies <- 11
 numCom<-30
@@ -32,6 +32,7 @@ dispV <- c(0.0005, 0.005, 0.015)
 #dispV<- c(0.0005,0.005,0.015,0.05)#c(0.0005,0.005,0.015)
 dd<-1 #distance decay
 numLinks<-numCom*2
+sumby <- 20
 
 
 rInput<-150 #resource input
@@ -57,13 +58,15 @@ Component_data_reps<-data.frame(Rep=rep(1:reps, each = length(nSpeciesMult)*leng
 Meta_dyn_reps<- data.frame(Rep=rep(1:reps,each=3*length(sampleV)*length(nSpeciesMult)*length(nPatchDel)),Dispersal=rep(dispV,each=reps*3*length(sampleV)*length(nSpeciesMult)*length(nPatchDel)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*reps*3*length(sampleV)*length(nSpeciesMult)*length(nPatchDel)),Species=rep(nSpeciesMult, each = length(nPatchDel)*3*length(sampleV)), DelPatches=rep(nPatchDel, each = 3*length(sampleV)),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")), each = length(sampleV)),TimeStep = rep(1:length(sampleV)),Proportion=NA)
 
 #Data frame recording the time at which the last extinction happens + the number of extinctions that happen, in each scenario
-ED_data<-data.frame(Rep=rep(1:reps,each=2*length(dispV)*length(removeV)*length(nSpeciesMult)*length(nPatchDel)),Dispersal=rep(dispV,each=2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = 2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = 2), Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA)
+ED_data<-data.frame(Rep=rep(1:reps,each=2*length(dispV)*length(removeV)*length(nSpeciesMult)*length(nPatchDel)),Dispersal=rep(dispV,each=2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = 2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = 2), Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA, BiomassChange = NA, LagTime = NA)
 
 #SR_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),
 #Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), SR = NA)
 
 Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),
-Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, SR = NA)
+Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, CVTime = NA, SR = NA)
+
+#Biomass_Time_Summd <- data.frame(Rep=rep(1:reps, each = (length(sampleV)/sumby)*length(removeV)*length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),Dispersal=rep(dispV, each = length(removeV)*(length(sampleV)/sumby)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = (length(sampleV)/sumby)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = (length(sampleV)/sumby)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = (length(sampleV)/sumby)*2), Scale=rep(c("Local","Regional"), each = (length(sampleV)/sumby)),TimeStep = rep(1:(length(sampleV)/sumby)), Biomass = NA, IndivBiomass = NA, SR = NA)
 
 IndivPatch <- data.frame(Rep=rep(1:reps, each = numCom*length(removeV)*length(dispV)*length(nSpeciesMult)*length(nPatchDel)), Dispersal=rep(dispV, each = length(removeV)*numCom*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom*length(nSpeciesMult)*length(nPatchDel)), Species = rep(nSpeciesMult, each = numCom*length(nPatchDel)), DelPatches = rep(nPatchDel, each = numCom), Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA, iBiomass = NA)
 
@@ -81,11 +84,11 @@ Component_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=length(nSpecies
   Meta_dyn_noreps<- data.frame(Rep=r,Dispersal=rep(dispV,each=3*length(sampleV)*length(nSpeciesMult)*length(nPatchDel)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*3*length(sampleV)*length(nSpeciesMult)*length(nPatchDel)),Species=rep(nSpeciesMult, each = length(nPatchDel)*3*length(sampleV)), DelPatches=rep(nPatchDel, each = 3*length(sampleV)),Dynamic=rep(factor(c("Species sorting", "Mass effects", "Base growth"),levels = c("Base growth","Species sorting","Mass effects")), each = length(sampleV)),TimeStep = rep(1:length(sampleV)),Proportion=NA) 
   
   #Data frame recording the time at which the last extinction happens + the number of extinctions that happen, in each scenario
-ED_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = 2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = 2), Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA)
+ED_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = 2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = 2), Scale=rep(c("Local","Regional")), LastDebtTime = NA, SRLoss = NA, Mean_Bmass = NA, CV_Bmass = NA, BiomassChange = NA, LagTime = NA)
   
 #SR_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), SR = NA)
 
-Biomass_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, SR = NA)
+Biomass_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, CVTime = NA, SR = NA)
   
 IndivPatch_noreps <- data.frame(Rep=r, Dispersal=rep(dispV, each = length(removeV)*numCom*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = numCom*length(nSpeciesMult)*length(nPatchDel)), Species = rep(nSpeciesMult, each = numCom*length(nPatchDel)), DelPatches = rep(nPatchDel, each = numCom), Patch = rep(1:numCom), Betweenness = NA, LastExtTime = NA, iBiomass = NA)
   
@@ -304,7 +307,7 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       
       #Average Individual Biomass (regional level)
       Biomass_Time_noreps$IndivBiomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- colMeans(apply(Abund,3,colSums,na.rm = T))
-      
+     
       #Average Individual Biomass (local level)
       ##average individual biomass in each patch at each time point
       localibiomass <- matrix(nrow = numCom, ncol = length(sampleV))
@@ -318,7 +321,67 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       IndivPatch_noreps$iBiomass[IndivPatch_noreps$Rep==r & IndivPatch_noreps$Dispersal==dispV[i] & IndivPatch_noreps$Patch_remove==removeV[j] & IndivPatch_noreps$Species== nSpeciesMult[s] & IndivPatch_noreps$DelPatches == nPatchDel[p]] <- rowMeans(localibiomass,na.rm=T)
       
       #Effdiv_data<-array(NA,dim=c(length(sampleV),5),dimnames = list(sampleV,c("AddAlpha","MultAlpha","AddBeta","MultBeta","Gamma")))
-      
+  
+  #summarizing biomass, indivbiomass (?might take out) over time for BiomassChange and LagTime parameters      
+  Biomass_Time_Summd <- Biomass_Time_noreps %>%
+  group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/sumby)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep)%>%
+  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_IndivBiomass = mean(IndivBiomass, na.rm = T)) 
+  #group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, TimeStepRound) %>%
+  #summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_IndivBiomassFinal = mean(Mean_IndivBiomass, na.rm = T), SD_IndivBiomass = sd(Mean_IndivBiomass, na.rm = T))
+
+rangelim <- range(Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"][1:20])[2]-range(Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"][1:20])[1]
+
+FinalBiomass <- Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Regional"][2]    
+Lagt <- 2
+for(w in 2:(length(sampleV)/sumby)){
+	CurrentBiomass <- Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Regional"][w]
+	if(abs(CurrentBiomass - FinalBiomass) > rangelim){
+		FinalBiomass <- CurrentBiomass
+		Lagt <- w
+	}
+}
+#local CV over time (seems to not quite work, not sure how to fix)
+x <- rowMeans(L_Bmass_sep, na.rm = T)
+CV<-vector(length = length(sampleV)-sumby)
+coeff_var<-function(i)
+{
+  select<-c(i:(i+sumby))
+  CV[i]<-sd(x[select])/mean(x[select])
+}
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- tapply(rowMeans(L_Bmass_sep, na.rm = T),1:length(sampleV),coeff_var)
+
+#regional CV over time (seems to not quite work, not sure how to fix)
+x <- R_Bmass
+CV<-vector(length = length(sampleV)-sumby)
+coeff_var<-function(i)
+{
+  select<-c(i:(i+sumby))
+  CV[i]<-sd(x[select])/mean(x[select])
+}
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- tapply(R_Bmass,1:length(sampleV),coeff_var)
+
+ ED_data_noreps$BiomassChange[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"] <- abs(Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Regional"][1] - FinalBiomass)
+ 
+  ED_data_noreps$LagTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"] <- (Lagt*sumby)-20
+ 
+ rangelim <- range(Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"][1:20])[2]-range(Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"][1:20])[1]
+
+FinalBiomass <- Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Local"][2]    
+Lagt <- 2
+for(w in 2:(length(sampleV)/sumby)){
+	CurrentBiomass <- Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Local"][w]
+	if(abs(CurrentBiomass - FinalBiomass) > rangelim){
+		FinalBiomass <- CurrentBiomass
+		Lagt <- w
+	}	
+}
+  
+ ED_data_noreps$BiomassChange[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- abs(Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Local"][1] - FinalBiomass)
+ 
+ED_data_noreps$LagTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- (Lagt*sumby)-20
+            
       EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Species == nSpeciesMult[s] & EffectiveDiv_Time_noreps$DelPatches == nPatchDel[p] & EffectiveDiv_Time_noreps$Metric=="Alpha"] <- Effdiv_data[,1]
       
       EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveDiv_Time_noreps$Dispersal==dispV[i] & EffectiveDiv_Time_noreps$Patch_remove==removeV[j] & EffectiveDiv_Time_noreps$Species == nSpeciesMult[s] & EffectiveDiv_Time_noreps$DelPatches == nPatchDel[p] & EffectiveDiv_Time_noreps$Metric=="Gamma"] <- Effdiv_data[,5]
