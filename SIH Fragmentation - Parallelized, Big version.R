@@ -350,7 +350,8 @@ coeff_var<-function(i)
   select<-c(i:(i+sumby))
   CV[i]<-sd(x[select])/mean(x[select])
 }
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- tapply(rowMeans(L_Bmass_sep, na.rm = T),1:length(sampleV),coeff_var)
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- tapply(1:length(sampleV),1:length(sampleV),coeff_var)
+#note on the above: the first element specifies a vector that will become 'i', the 2nd specifies the elements of that vector you want to use - but ultimately coeff_var is using the 'x' as defined above (as x in the function) -- done this way because tapply technically can only utilize functions that take one input
 
 #regional CV over time (seems to not quite work, not sure how to fix)
 x <- R_Bmass
@@ -360,7 +361,7 @@ coeff_var<-function(i)
   select<-c(i:(i+sumby))
   CV[i]<-sd(x[select])/mean(x[select])
 }
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- tapply(R_Bmass,1:length(sampleV),coeff_var)
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- tapply(1:length(sampleV),1:length(sampleV),coeff_var)
 
  ED_data_noreps$BiomassChange[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"] <- abs(Biomass_Time_Summd$Mean_Biomass[Biomass_Time_Summd$Rep==r & Biomass_Time_Summd$Dispersal==dispV[i] & Biomass_Time_Summd$Patch_remove==removeV[j] & Biomass_Time_Summd$Species == nSpeciesMult[s] & Biomass_Time_Summd$DelPatches == nPatchDel[p] & Biomass_Time_Summd$Scale=="Regional"][1] - FinalBiomass)
  
