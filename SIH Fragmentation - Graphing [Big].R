@@ -22,7 +22,7 @@ ggplot(MeanExtTimeBin[MeanExtTimeBin$Species == nSpeciesMult[s] & MeanExtTimeBin
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
@@ -41,7 +41,7 @@ for(s in 1:length(nSpeciesMult)){
       ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
       #facet_grid(Dispersal~Patch_remove,scale="free")+
       #facet_grid(Scale~Patch_remove,scale="free")+
-      geom_vline(x=20)+
+      geom_vline(x=predel_collecttime)+
       theme_bw(base_size = 18)+ #gets rid of grey background
       theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
   }
@@ -58,8 +58,8 @@ for(o in 1:length(dispV)){
     for(s in 1:length(nSpeciesMult)){
       for(p in 1:length(nPatchDel)){
         for(j in 1:reps){
-          PropSR_Time$SR[PropSR_Time$Scale == "Regional" & PropSR_Time$Dispersal == dispV[o] & PropSR_Time$Patch_remove == removeV[w] & PropSR_Time$Species == nSpeciesMult[s] & PropSR_Time$DelPatches == nPatchDel[p] & PropSR_Time$Rep == j]<- SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j]/SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][20]
-          PropSR_Time$SR[PropSR_Time$Scale == "Local" & PropSR_Time$Dispersal == dispV[o] & PropSR_Time$Patch_remove == removeV[w] & PropSR_Time$Species == nSpeciesMult[s] & PropSR_Time$DelPatches == nPatchDel[p] & PropSR_Time$Rep == j]<- SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j]/SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][20]
+          PropSR_Time$SR[PropSR_Time$Scale == "Regional" & PropSR_Time$Dispersal == dispV[o] & PropSR_Time$Patch_remove == removeV[w] & PropSR_Time$Species == nSpeciesMult[s] & PropSR_Time$DelPatches == nPatchDel[p] & PropSR_Time$Rep == j]<- SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j]/SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][predel_collecttime]
+          PropSR_Time$SR[PropSR_Time$Scale == "Local" & PropSR_Time$Dispersal == dispV[o] & PropSR_Time$Patch_remove == removeV[w] & PropSR_Time$Species == nSpeciesMult[s] & PropSR_Time$DelPatches == nPatchDel[p] & PropSR_Time$Rep == j]<- SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j]/SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][predel_collecttime]
           
         } 
       }
@@ -80,7 +80,7 @@ ggplot(PropSRTimeSummd[PropSRTimeSummd$Species==nSpeciesMult[s]&PropSRTimeSummd$
   xlab("Time Step")+
   ylab("Mean Proportion of Species Richness")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -93,13 +93,13 @@ for(o in 1:length(dispV)){
     for(j in 1:reps){
       for(s in 1:length(nSpeciesMult)){
         for(p in 1:length(nPatchDel)){
-          Numat20 <- SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][20]
+          Numpredel <- SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][predel_collecttime]
           
-          ED_data$PercentLoss[ED_data$Scale == "Regional" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][length(sampleV)])/Numat20
+          ED_data$PercentLoss[ED_data$Scale == "Regional" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p] & ED_data$Rep == j]<- (Numpredel - SR_Time$SR[SR_Time$Scale == "Regional" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][length(sampleV)])/Numpredel
           
-          Numat20 <- SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][20]
+          Numpredel <- SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][predel_collecttime]
           
-          ED_data$PercentLoss[ED_data$Scale == "Local" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p] & ED_data$Rep == j]<- (Numat20 - SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][length(sampleV)])/Numat20 
+          ED_data$PercentLoss[ED_data$Scale == "Local" & ED_data$Dispersal == dispV[o] & ED_data$Patch_remove == removeV[w] & ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p] & ED_data$Rep == j]<- (Numpredel - SR_Time$SR[SR_Time$Scale == "Local" & SR_Time$Dispersal == dispV[o] & SR_Time$Patch_remove == removeV[w] & SR_Time$Species == nSpeciesMult[s] & SR_Time$DelPatches == nPatchDel[p] & SR_Time$Rep == j][length(sampleV)])/Numpredel 
           
         }
       }
@@ -130,7 +130,7 @@ ggplot(EDdata_avg2[EDdata_avg2$Species == nSpeciesMult[s] & EDdata_avg2$DelPatch
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/20,y=BiomassChange,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+ 
+ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/(ePeriod/samplelength),y=BiomassChange,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal)))+ 
   scale_color_brewer("Dispersal Level", palette = "Paired")+ #or "Paired"
   geom_point(aes(shape = factor(Patch_remove)), size = 2)+
   scale_shape_manual(values=c(15,19, 17))+
@@ -144,7 +144,7 @@ ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatch
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #this graph is an attempt at a line plot, but it really doesn't work very well
-ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/20,y=BiomassChange,color=interaction(factor(Dispersal), Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+ 
+ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/(ePeriod/samplelength),y=BiomassChange,color=interaction(factor(Dispersal), Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+ 
   scale_color_brewer("Dispersal Level", palette = "Paired")+ #or "Paired"
   geom_line(aes(group = interaction(factor(Dispersal), Patch_remove)))+
   xlab("Time Until Re-Equilibrium")+
@@ -157,7 +157,7 @@ ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatch
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 #also doesn't really work :(
-ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/20,y=BiomassChange,color=interaction(factor(Dispersal), Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+ 
+ggplot(ED_data[ED_data$Species == nSpeciesMult[s] & ED_data$DelPatches == nPatchDel[p],],aes(x=LagTime/(ePeriod/samplelength),y=BiomassChange,color=interaction(factor(Dispersal), Patch_remove),group=interaction(Scale, Patch_remove, Dispersal)))+ 
   scale_color_brewer("Dispersal Level", palette = "Paired")+ #or "Paired"
   geom_point(aes(group = interaction(factor(Dispersal), Patch_remove)))+
   stat_smooth(method = "lm")+
@@ -234,7 +234,7 @@ ggplot(MetaDynAvg_Bin[MetaDynAvg_Bin$Species == nSpeciesMult[s] & MetaDynAvg_Bin
   geom_line()+
   scale_x_log10()+
   facet_grid(Dispersal~Patch_remove)+	  
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_Proportion-SD_Proportion,ymax=Mean_Proportion+SD_Proportion), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
@@ -250,7 +250,7 @@ ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPa
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -265,7 +265,7 @@ ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPa
   xlab("Time Step")+
   ylab("CV Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -282,7 +282,7 @@ ggplot(Biomass_Time[Biomass_Time$Species == nSpeciesMult[s] & Biomass_Time$DelPa
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -302,7 +302,7 @@ ggplot(Biomass_TimeSummd[Biomass_TimeSummd$Species == nSpeciesMult[s] & Biomass_
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -317,7 +317,7 @@ ggplot(Biomass_TimeSummd[Biomass_TimeSummd$Species == nSpeciesMult[s] & Biomass_
   xlab("Time Step")+
   ylab("CV Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20)+ #makes sense because now the first 20 points are just the CV of the last period before patch deletion
+  geom_vline(x=predel_collecttime)+ #makes sense because now the first 20 points are just the CV of the last period before patch deletion
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -342,7 +342,7 @@ ggplot(BiomassTime_Bin[BiomassTime_Bin$Species == nSpeciesMult[s] & BiomassTime_
   xlab("Time Step")+
   #ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -360,7 +360,7 @@ ggplot(BiomassTime_Bin[BiomassTime_Bin$Species == nSpeciesMult[s] & BiomassTime_
   xlab("Time Step")+
   #ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -375,7 +375,7 @@ ggplot(BiomassTime_Bin[BiomassTime_Bin$Species == nSpeciesMult[s] & BiomassTime_
   xlab("Time Step")+
   ylab("CV Biomass (Binned)")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -422,7 +422,7 @@ ggplot(BiomassTime_StandSummd[BiomassTime_StandSummd$Species == nSpeciesMult[s] 
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -449,7 +449,7 @@ ggplot(BiomassTimeStand_Bin[BiomassTimeStand_Bin$Species == nSpeciesMult[s] & Bi
   xlab("Time Step")+
   #ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local Scale"))+
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -469,7 +469,7 @@ ggplot(BiomassTime_StandSummd2[BiomassTime_StandSummd2$Species == nSpeciesMult[s
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale"))+
-  geom_vline(x=20)+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -499,7 +499,7 @@ geom_ribbon(aes(ymin=Lower_StandIndivBiomass,ymax=Upper_StandIndivBiomass),width
   xlab("Time Step")+
   #ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local Scale"))+
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -513,7 +513,7 @@ ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_BiomassFinal,color=Scale,fill 
   geom_line()+
   scale_x_log10()+
   facet_grid(Dispersal~Patch_remove)+	  
-  geom_vline(x=20/20)+
+  geom_vline(x=predel_collecttime/20)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_BiomassFinal-SD_Biomass,ymax=Mean_BiomassFinal+SD_Biomass), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
@@ -524,7 +524,7 @@ ggplot(BiomassTime_Bin,aes(x=TimeStepRound,y=Mean_EffDivFinal,color=Scale,fill =
   geom_line()+
   scale_x_log10()+
   facet_grid(Dispersal~Patch_remove)+	  
-  geom_vline(x=20/5)+
+  geom_vline(x=predel_collecttime/5)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_EffDivFinal-SD_EffDiv,ymax=Mean_EffDivFinal+SD_EffDiv), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
@@ -553,7 +553,7 @@ ggplot(EffectiveDiv_Bin,aes(x=TimeStepRound,y=Mean_ExpShannonFinal,color=Metric,
   geom_line()+
   scale_x_log10()+
   facet_grid(Dispersal~Patch_remove)+	  
-  geom_vline(x=20/5)+
+  geom_vline(x=predel_collecttime/5)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   geom_ribbon(aes(ymin=Mean_ExpShannonFinal-SD_ExpShannon,ymax=Mean_ExpShannonFinal+SD_ExpShannon), alpha = 0.2, color = NA)+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
