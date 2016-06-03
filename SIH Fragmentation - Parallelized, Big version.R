@@ -340,9 +340,9 @@ coeff_var_right<-function(i)
 }
 
 #firstCV <- sd(x[1:20])/mean(x[1:20])
-
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
-#-> c(rep(firstCV,20), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- c(tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var),rep(NA,20)) 
+#<-c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+#<- c(rep(firstCV,20), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #note on tapply: the first element specifies a vector that will become 'i', the 2nd specifies the elements of that vector you want to use - but ultimately coeff_var is using the 'x' as defined above (as x in the function) -- done this way because tapply technically can only utilize functions that take one input
 
 #regional CV over time (seems to not quite work, not sure how to fix)
@@ -362,7 +362,8 @@ coeff_var_right<-function(i)
 #firstCV <- sd(x[1:20])/mean(x[1:20])
 
 #will need to change the '21' if change the number of samples taken before patch deletion...
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- c(tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var),rep(NA,20))
+#<-c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var)) <- didn't work because the first 2 arguments can't be the same length
 #<- c(rep(firstCV,20), tapply(21:length(sampleV),21:length(sampleV),coeff_var))
 
 
@@ -456,7 +457,9 @@ ED_data_noreps$LagTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i
       R_SR.df<-data.table(R_SR=colSums(apply(Abund,3,colSums,na.rm=T)>0))
       
       R_lastdebt<-R_SR.df%>%
-        summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
+      	summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR[-c(1:predel_collecttime-1)]!=last(R_SR)),Loss=R_SR[predel_collecttime]-last(R_SR))
+        #summarise(Mean_SR=mean(R_SR),Debt_t=sum(R_SR!=last(R_SR)),Loss=first(R_SR)-last(R_SR))
+        #^ changed from what is directly above on 6.3.2016 just in case any changes in SR happen before patch deletion, and to adjust the debt time so that isn't always being artificially inflated by the pre-patch deletion times (because the biomass one isn't, so need to make them comparable) [also changed locally obvs]
       
       ED_data_noreps$LastDebtTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"]<-R_lastdebt$Debt_t
       
@@ -467,12 +470,14 @@ ED_data_noreps$LagTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i
       #^ Modified 5.5.2016 because otherwise for the deleted patches, the local total SR loss and local last extinction time were 'wrong'
       L_SR.df<-data.table(L_SR=t(apply((Abund>0),3,rowSums)))
       
-      ldebt.f<-function(x){sum(x!=last(x))}
+      ldebt.f<-function(x){sum(x[-c(1:predel_collecttime-1)]!=last(x))}
+      #old version: ldebt.f<-function(x){sum(x!=last(x))}
       
       L_lastdebt<-L_SR.df%>%
         summarise_each(funs(ldebt.f))
       
-      loss.f<-function(x){sum(first(x)-last(x))}
+      loss.f<-function(x){sum(x[predel_collecttime]-last(x))}
+      #old version: loss.f<-function(x){sum(first(x)-last(x))}
       
       L_loss<-L_SR.df%>%
         summarise_each(funs(loss.f))
