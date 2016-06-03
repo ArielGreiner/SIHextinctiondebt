@@ -388,12 +388,21 @@ ggplot(BiomassTime_Bin[BiomassTime_Bin$Species == nSpeciesMult[s] & BiomassTime_
   #group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
   #mutate(StandBiomass = decostand(Biomass,method="standardize"),StandIndivBiomass = decostand(IndivBiomass,method="standardize"), StandSR = decostand(SR,method="standardize"), StandCVTime = decostand(CVTime,method="standardize", na.rm=T)) %>%
  #^ doesn't work, would also need to add a summarizing thing after this within the pipeline
+for(p in 1:length(nPatchDel)){
+  for(s in 1:length(nSpeciesMult)){
+    BiomassTime_Stand <- Biomass_Time
+    BiomassTime_Stand$StandSR[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] <- (BiomassTime_Stand$SR[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] - mean(BiomassTime_Stand$SR[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]]))/sd(BiomassTime_Stand$SR[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]])
+    BiomassTime_Stand$StandBiomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] <- (BiomassTime_Stand$Biomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] - mean(BiomassTime_Stand$Biomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]]))/sd(BiomassTime_Stand$Biomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]])
+    BiomassTime_Stand$StandIndivBiomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] <- (BiomassTime_Stand$IndivBiomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] - mean(BiomassTime_Stand$IndivBiomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]]))/sd(BiomassTime_Stand$IndivBiomass[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]])
+    BiomassTime_Stand$StandCVTime[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] <- (BiomassTime_Stand$CVTime[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]] - mean(BiomassTime_Stand$CVTime[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]], na.rm=T))/sd(BiomassTime_Stand$CVTime[BiomassTime_Stand$Species == nSpeciesMult[s] & BiomassTime_Stand$DelPatches == nPatchDel[p]], na.rm=T)
+  }
+}
+BiomassTime_Stand2 <- Biomass_Time
+BiomassTime_Stand2$StandSR <- (BiomassTime_Stand2$SR - mean(BiomassTime_Stand2$SR))/sd(BiomassTime_Stand2$SR)
+BiomassTime_Stand2$StandBiomass <- (BiomassTime_Stand2$Biomass - mean(BiomassTime_Stand2$Biomass))/sd(BiomassTime_Stand2$Biomass)
+BiomassTime_Stand2$StandIndivBiomass <- (BiomassTime_Stand2$IndivBiomass - mean(BiomassTime_Stand2$IndivBiomass))/sd(BiomassTime_Stand2$IndivBiomass)
+BiomassTime_Stand2$StandCVTime <- (BiomassTime_Stand2$CVTime - mean(BiomassTime_Stand2$CVTime, na.rm=T))/sd(BiomassTime_Stand2$CVTime, na.rm=T)
 
-BiomassTime_Stand <- Biomass_Time
-BiomassTime_Stand$StandSR <- (BiomassTime_Stand$SR - mean(BiomassTime_Stand$SR))/sd(BiomassTime_Stand$SR)
-BiomassTime_Stand$StandBiomass <- (BiomassTime_Stand$Biomass - mean(BiomassTime_Stand$Biomass))/sd(BiomassTime_Stand$Biomass)
-BiomassTime_Stand$StandIndivBiomass <- (BiomassTime_Stand$IndivBiomass - mean(BiomassTime_Stand$IndivBiomass))/sd(BiomassTime_Stand$IndivBiomass)
-BiomassTime_Stand$StandCVTime <- (BiomassTime_Stand$CVTime - mean(BiomassTime_Stand$CVTime, na.rm=T))/sd(BiomassTime_Stand$CVTime, na.rm=T)
 #BiomassTime_Stand$StandSR <- decostand(BiomassTime_Stand$SR,method="standardize")
 #BiomassTime_Stand$StandBiomass <- decostand(BiomassTime_Stand$Biomass, method = "standardize")
 #BiomassTime_Stand$StandIndivBiomass <- decostand(BiomassTime_Stand$IndivBiomass, method = "standardize")
