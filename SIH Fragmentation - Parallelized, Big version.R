@@ -340,7 +340,7 @@ coeff_var_right<-function(i)
 }
 
 #firstCV <- sd(x[1:20])/mean(x[1:20])
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- c(tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var),rep(NA,20)) 
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- c(rep(NA,20),tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var)) 
 #<-c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #<- c(rep(firstCV,20), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #note on tapply: the first element specifies a vector that will become 'i', the 2nd specifies the elements of that vector you want to use - but ultimately coeff_var is using the 'x' as defined above (as x in the function) -- done this way because tapply technically can only utilize functions that take one input
@@ -362,7 +362,7 @@ coeff_var_right<-function(i)
 #firstCV <- sd(x[1:20])/mean(x[1:20])
 
 #will need to change the '21' if change the number of samples taken before patch deletion...
-Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- c(tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var),rep(NA,20))
+Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- c(rep(NA,20), tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(ePeriod/(samplelength))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #<-c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var)) <- didn't work because the first 2 arguments can't be the same length
 #<- c(rep(firstCV,20), tapply(21:length(sampleV),21:length(sampleV),coeff_var))
 
