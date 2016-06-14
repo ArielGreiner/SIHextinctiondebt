@@ -350,6 +350,13 @@ Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Disp
 #<- c(rep(firstCV,20), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #note on tapply: the first element specifies a vector that will become 'i', the 2nd specifies the elements of that vector you want to use - but ultimately coeff_var is using the 'x' as defined above (as x in the function) -- done this way because tapply technically can only utilize functions that take one input
 
+#calculating the CV change, locally, that would occur due singularly to fake patch deletion
+allpatchversion <- c(rep(NA,(ePeriod/(samplelength))),tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(predel_collecttime-(ePeriod/(samplelength)))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+x <- rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)
+missingpatchversion <- c(rep(NA,(ePeriod/(samplelength))),tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(predel_collecttime-(ePeriod/(samplelength)))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+ED_data_noreps$CVChangeNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- abs(allpatchversion[predel_collecttime] - missingpatchversion[predel_collecttime])
+
+
 #regional CV over time (seems to not quite work, not sure how to fix)
 x <- R_Bmass
 CV<-vector(length = length(sampleV)-sumby)
@@ -370,6 +377,12 @@ coeff_var_right<-function(i)
 Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"] <- c(rep(NA,(ePeriod/(samplelength))), tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(predel_collecttime-(ePeriod/(samplelength)))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
 #<-c(tapply(1:predel_collecttime,1:(predel_collecttime - ePeriod/(samplelength)),coeff_var_right), tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var)) <- didn't work because the first 2 arguments can't be the same length
 #<- c(rep(firstCV,20), tapply(21:length(sampleV),21:length(sampleV),coeff_var))
+
+#calculating the CV change, regionally, that would occur due singularly to fake patch deletion
+allpatchversion <- c(rep(NA,(ePeriod/(samplelength))), tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(predel_collecttime-(ePeriod/(samplelength)))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+x <- apply(Abund[-patch.delete,,],3,sum,na.rm=T) 
+missingpatchversion <- c(rep(NA,(ePeriod/(samplelength))), tapply(1:predel_collecttime,1:predel_collecttime,coeff_var_right)[1:(predel_collecttime-(ePeriod/(samplelength)))], tapply((predel_collecttime+1):length(sampleV),(predel_collecttime+1):length(sampleV),coeff_var))
+ED_data_noreps$CVChangeNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"] <- abs(allpatchversion[predel_collecttime] - missingpatchversion[predel_collecttime])
 
 
   #summarizing biomass, cvtime over time for BiomassChange and LagTime parameters      
