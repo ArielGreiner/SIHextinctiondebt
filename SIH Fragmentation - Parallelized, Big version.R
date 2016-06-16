@@ -647,7 +647,7 @@ for(r in 1:reps){
 }  
 
 #save(Component_data_reps, Meta_dyn_reps, ED_data, SR_Time, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
-save(Component_data_reps, Meta_dyn_reps, ED_data, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
+save(Component_data_reps, Meta_dyn_reps, ED_data, Biomass_Time, IndivPatch, EffectiveDiv_Time,PropBiomass_Time,PercentBiomass_Time, file = "FullFragmentationDataSet.RData")
 
 
 
