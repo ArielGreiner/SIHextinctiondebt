@@ -17,7 +17,7 @@ cl <- makeCluster(detectCores())
 registerDoParallel(cl)
 getDoParWorkers()
 
-reps<- 16 #10
+reps<- 4 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
@@ -570,14 +570,14 @@ Numpredel <- Biomass_Time_noreps$SR[Biomass_Time_noreps$Scale == "Regional" & Bi
           ED_data_noreps$PercentCVchange[ED_data_noreps$Scale == "Regional" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[w] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (CVpredel - Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Scale == "Regional" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV) - ePeriod/samplelength])/CVpredel
           
 #Percent Change Metrics Calculation - Local
-          Numpredel <- Biomass_Time_noreps$SR[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
-          Biomasspredel <- Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
-          CVpredel <- Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
+          Numpredel <- Biomass_Time_noreps$SR[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
+          Biomasspredel <- Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
+          CVpredel <- Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][predel_collecttime]
           
-          ED_data_noreps$PercentLoss[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[w] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (Numpredel - Biomass_Time_noreps$SR[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV)])/Numpredel 
+          ED_data_noreps$PercentLoss[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (Numpredel - Biomass_Time_noreps$SR[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV)])/Numpredel 
           #^ i feel like this line could be replaced with ED_data_noreps$SRLoss[...]/Numpredel now that the SRLoss metric only looks at what's going on after patch deletion though not sure about this
-          ED_data_noreps$PercentBmasschange[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[w] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (Biomasspredel - Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV)])/Biomasspredel
-          ED_data_noreps$PercentCVchange[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[w] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (CVpredel - Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[w] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV) - ePeriod/samplelength])/CVpredel
+          ED_data_noreps$PercentBmasschange[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (Biomasspredel - Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV)])/Biomasspredel
+          ED_data_noreps$PercentCVchange[ED_data_noreps$Scale == "Local" & ED_data_noreps$Dispersal == dispV[i] & ED_data_noreps$Patch_remove == removeV[j] & ED_data_noreps$Species == nSpeciesMult[s] & ED_data_noreps$DelPatches == nPatchDel[p] & ED_data_noreps$Rep == r]<- (CVpredel - Biomass_Time_noreps$CVTime[Biomass_Time_noreps$Scale == "Local" & Biomass_Time_noreps$Dispersal == dispV[i] & Biomass_Time_noreps$Patch_remove == removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Rep == r][length(sampleV) - ePeriod/samplelength])/CVpredel
                     
       #Individual Patch Type Metrics
       ##need to fix this metric because 'btw' has length 25, doesn't include the missing patches...but it doesn't crash or anything
@@ -628,7 +628,7 @@ PercentBiomass_Time_noreps$SR[PercentBiomass_Time_noreps$Rep==r & PercentBiomass
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
   #return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, SR_Time_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
-  return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
+  return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps, PropBiomass_Time_noreps, PercentBiomass_Time_noreps))
 }
 
 #run simulation function in parallel
@@ -642,6 +642,8 @@ for(r in 1:reps){
   Biomass_Time[Biomass_Time$Rep==r,]<-Sim_data[[4]]
   IndivPatch[IndivPatch$Rep==r,]<-Sim_data[[5]]
   EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[6]]
+  PropBiomass_Time[PropBiomass_Time$Rep==r,]<-Sim_data[[7]]
+  PercentBiomass_Time[PercentBiomass_Time$Rep==r,]<-Sim_data[[8]]
 }  
 
 #save(Component_data_reps, Meta_dyn_reps, ED_data, SR_Time, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
