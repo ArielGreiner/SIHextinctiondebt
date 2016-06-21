@@ -27,7 +27,10 @@ nSpeciesMult <- c(7,11) #c(7,11,15)
 nPatchDel <- c(10,20) #c(5,10,20)
 #nSpecies <- 11
 #numCom<-30
+
+##general graph change: 
 numCom <- 100
+
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
 #dispV <- 0.005
 #dispV <- c(0.0005, 0.005, 0.015)
@@ -102,7 +105,7 @@ SIH_frag<- function(){
   
   for(s in 1:length(nSpeciesMult)){
     for(p in 1:length(nPatchDel)){
-      
+      success <- F
       #new, replaced code:
       while(!success){
         landscape<-round(data.frame(x = runif(numCom, min = 1, max = 1000), y = runif(numCom, min = 1, max = 1000)))
