@@ -1,7 +1,7 @@
 setwd("~/GitHub/SIH Extinction Debt")
-source("./Functions/rewire.R")
-source("./Functions/create_random_net.r")
-source("./Functions/addweights.r")
+#source("./Functions/rewire.R") ##general graph change
+#source("./Functions/create_random_net.r") ##general graph change
+#source("./Functions/addweights.r") ##general graph change
 require(igraph)
 require(dplyr)
 require(ggplot2)
@@ -25,7 +25,8 @@ set.seed(2)
 nSpeciesMult <- 11 #c(7,11) #c(7,11,15)
 nPatchDel <-c(5,10,20) #c(10,20)
 #nSpecies <- 11
-numCom<-30
+numCom<-  30 #100 #30 ##general graph change #changed back to 30 because eurgh new dynamics
+
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
 #dispV <- 0.005
 #dispV <- c(0.0005, 0.005, 0.015)
@@ -111,29 +112,71 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
 
   for(s in 1:length(nSpeciesMult)){
   	for(p in 1:length(nPatchDel)){
+  	##general graph code:	
+  		success <- F
+      while(!success){
+        landscape<-round(data.frame(x = runif(numCom, min = 1, max = 1000), y = runif(numCom, min = 1, max = 1000)))
+        distance_mat1<-as.matrix(dist(landscape,method = "euclidean",diag = T,upper=T))
+        
+        distance_mat<-1*(distance_mat1<200)
+        diag(distance_mat)<-0
+        connections<-distance_mat
+        distance_mat[upper.tri(distance_mat)]<-0
+        
+        graph<-as.undirected(graph.adjacency(distance_mat))
+        graph<-set.vertex.attribute(graph,"x coordinate",value=landscape$x)
+        graph<-set.vertex.attribute(graph,"y coordinate",value=landscape$y)
+        graph<-set.edge.attribute(graph,"weight",value=distance_mat1[cbind(as.numeric(get.edgelist(graph)[,1]),  as.numeric(get.edgelist(graph)[,2]))])
+        
+        
+        if(components(graph)$no == 1){success<-T}}
+      
+      envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*1+1+(landscape$y)*2*pi/1000)+1)
+      
+      plot.igraph(graph,layout=as.matrix(landscape), vertex.color=heat.colors(100)[1+(envt.v*99)], vertex.size=5000,vertex.label=NA, rescale=F, ylim=c(0,1000),xlim=c(0,1000))
+      #until here  		
+
+  		
   for(i in 1:length(dispV)){
     disp<-dispV[i]
+    
+    ##general graph code: 
+        calc.immigration <- function(N,a,dispersal_matrix) dispersal_matrix%*%N*rep(a,each=length(R))
+    
     nSpecies <- nSpeciesMult[s]
     rand<-randV[1]
+    
+    ##ring graph code:
     #create initial graph
-    numEdgesRewired<-rand/100*(numCom*2) 
-    success<-FALSE
-    while(!success){unweightedgraph<- if(rand==100) create_random_net(numCom, numLinks) else rewire(numCom,numLinks,numEdgesRewired)
-    success<-length(V(unweightedgraph))==30}
+    #numEdgesRewired<-rand/100*(numCom*2) 
+    #success<-FALSE
+    #while(!success){unweightedgraph<- if(rand==100) create_random_net(numCom, numLinks) else rewire(numCom,numLinks,numEdgesRewired)
+    #success<-length(V(unweightedgraph))==numCom}
+    
     for(j in 1:3){ 
       #counter <- 0
-      weightedgraph<-addweights(unweightedgraph,numLinks,numCom)
-      holdgraph<-weightedgraph
-      if(print.plots==T){plot(holdgraph, ylim=c(-1,1),xlim=c(-1,1), main = paste("Original Graph", removeV[j]))} 
+      
+      ##general graph code
+          landscape_run<-landscape
+          graph_run<-graph
+          d<-shortest.paths(graph_run, mode="all", weights=NULL, algorithm="automatic")
+          d_exp<-exp(-0.002*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
+          dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
+          
+      ##code above replaced code below here    
+      #weightedgraph<-addweights(unweightedgraph,numLinks,numCom)
+      #holdgraph<-weightedgraph
+      #if(print.plots==T){plot(holdgraph, ylim=c(-1,1),xlim=c(-1,1), main = paste("Original Graph", removeV[j]))} 
       #create dispersal matrix
-      d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
-      d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
-      dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
+      #d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
+      #d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
+      #dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
       
       #define vectors for model
       eOptimum<-1-seq(0,eAMP, by=eAMP/(nSpecies-1)) #species environmental optima
       
-      calc.immigration <- function(N,a,dispersal_matrix) dispersal_matrix%*%N*rep(a,each=length(R))
+      #code below moved above...
+      #calc.immigration <- function(N,a,dispersal_matrix) dispersal_matrix%*%N*rep(a,each=length(R))
       
       Prod<-array(NA,dim=c(numCom,nSpecies,length(sampleV)))
       Abund<-Prod
@@ -153,14 +196,14 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
         envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*TS+1+(1:numCom)*2*pi/numCom)+1)
         #left over bit of code from when all patches were being deleted
         if(is.null(rownames(dispersal_matrix))){ 
-          envt.v<-envt.v[as.numeric(names(dispersal_matrix))]
+          #ring graph code: envt.v<-envt.v[as.numeric(names(dispersal_matrix))]
           consume <- 0.1*(1.5-abs(sapply(eOptimum,'-',envt.v)))
           Nt <- N*(1+DT*(eff*R*consume - disp - mort)) + DT*Immigrants #abundance step
           Rt <- DT*rInput+R*(1-DT*(rLoss + sum(consume*N))) #resource step    
           
           Nt0 <- N0*(1+DT*(eff*R0*consume - mort))
           Rt0 <- DT*rInput+R0*(1-DT*(rLoss + sum(consume*N0)))} else { #resource step  
-            envt.v<-envt.v[as.numeric(rownames(dispersal_matrix))]
+            #ring graph code: envt.v<-envt.v[as.numeric(rownames(dispersal_matrix))]
             consume <- 0.1*(1.5-abs(sapply(eOptimum,'-',envt.v)))
             Nt <- N*(1+DT*(eff*R*consume - disp - mort)) + DT*Immigrants #abundance step
             Rt <- DT*rInput+R*(1-DT*(rLoss + rowSums(consume*N))) #resource step    
@@ -173,11 +216,22 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
         #sampling every time step that corresponds to an element in sampleV
         if(sum(TS==sampleV)==1){ 
           sample_id<-which(TS==sampleV)
-          Components$Number_components[sample_id]<-components(weightedgraph)$no
-          Components$Component_size[sample_id]<-mean(components(weightedgraph)$csize)
-          members<-components(weightedgraph)$membership
+          
+          ##general graph code:
+          Components$Number_components[sample_id]<-components(graph_run)$no
+          Components$Component_size[sample_id]<-mean(components(graph_run)$csize)
+          members<-components(graph_run)$membership
           envt.ranges<-sapply(unique(members),function(x){range(envt.v[members==x])})
           Components$Component_envt_range[sample_id]<-mean(envt.ranges[2,]-envt.ranges[1,])
+              
+		  ##ring graph code:	
+          #Components$Number_components[sample_id]<-components(weightedgraph)$no
+          #Components$Component_size[sample_id]<-mean(components(weightedgraph)$csize)
+          #members<-components(weightedgraph)$membership
+          #envt.ranges<-sapply(unique(members),function(x){range(envt.v[members==x])})
+          #Components$Component_envt_range[sample_id]<-mean(envt.ranges[2,]-envt.ranges[1,])
+          
+          
           #metacommunity process calculations
           if(is.null(rownames(N))){
             Prod[as.numeric(names(dispersal_matrix)),,sample_id] <- eff*consume*R*N
@@ -260,7 +314,7 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
             #com_data <- Abund[,,counter] 
             com_data <- Abund[,,sample_id]
             com_data[is.na(com_data)] = 0
-            renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/30)
+            renyi_avgshannon_a_mult <- prod(renyi(com_data,scales=1, hill=T))^(1/numCom)
             renyi_avgshannon_a <- mean(renyi(com_data,scales=1, hill=T))
             
             regional_data <- colSums(com_data)
@@ -287,27 +341,53 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
         if(TS == ((predel_collecttime*samplelength) + initial_time)){
           
           #deletes nPatchDel[p] patches at time step = 250,000+120,000 according to whatever scheme you choose
-          if(j==1){btw<-betweenness(weightedgraph)
-          if(sum(btw==0)){
-            patch.delete<-order(degree(weightedgraph),decreasing = T)[1:nPatchDel[p]]
-          } else{patch.delete<-order(btw,decreasing = T)[1:nPatchDel[p]] }
-          } else{
-            if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1:nPatchDel[p]]} else{
-              patch.delete<-sample(nrow(N),nPatchDel[p])}}    
-          weightedgraph<-delete.vertices(weightedgraph,patch.delete)
-          d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
-          d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
-          dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
-          dispersal_matrix[is.nan(dispersal_matrix)]<-0
+          ##general graph code:
+           if(j==1){btw<-betweenness(graph_run)
+              if(sum(btw)==0){
+                patch.delete<-order(degree(graph_run),decreasing = T)[1:nPatchDel[p]]
+              } else{patch.delete<-order(btw,decreasing = T)[1:nPatchDel[p]] }
+              } else{
+                if(j==2){patch.delete<-order(betweenness(graph_run),decreasing=F)[1:nPatchDel[p]]} else{
+                  patch.delete<-sample(nrow(N),nPatchDel[p])}}    
+              graph_run<-delete.vertices(graph_run,patch.delete)
+              landscape_run<-landscape_run[-patch.delete,]
+              
+              d<-shortest.paths(graph_run, mode="all", weights=NULL, algorithm="automatic")
+              d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
+              dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
+              dispersal_matrix[is.nan(dispersal_matrix)]<-0
+              
+              envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*TS+1+(landscape_run$y)*2*pi/1000)+1)
+              if(print.plots==T){
+                plot.igraph(graph_run,layout=as.matrix(landscape_run), vertex.color=heat.colors(100)[1+(envt.v*99)], vertex.size=5000,vertex.label=NA, rescale=F, ylim=c(0,1000),xlim=c(0,1000))
+              }  
+              
+              N<-N[-patch.delete,]
+              R<-R[-patch.delete]
+              N0<-N0[-patch.delete,]
+              R0<-R0[-patch.delete]
+
+
+          ##ring graph code:
+          #if(j==1){btw<-betweenness(weightedgraph)
+          #if(sum(btw==0)){
+           # patch.delete<-order(degree(weightedgraph),decreasing = T)[1:nPatchDel[p]]
+         # } else{patch.delete<-order(btw,decreasing = T)[1:nPatchDel[p]] }
+          #} else{
+         #   if(j==2){patch.delete<-order(betweenness(weightedgraph),decreasing=F)[1:nPatchDel[p]]} else{
+     #         patch.delete<-sample(nrow(N),nPatchDel[p])}} 
+      #    weightedgraph<-delete.vertices(weightedgraph,patch.delete)
+      #    d<-shortest.paths(weightedgraph, mode="all", weights=NULL, algorithm="automatic")
+      #    d_exp<-exp(-dd*d) - diag(nrow(d))  #dispersal kernel function of the d matrix
+       #   dispersal_matrix <- apply(d_exp, 1, function(x) x/sum(x)) #divides the d_exp matrix by the column sums to make it a conservative dispersal matrix
+       #   dispersal_matrix[is.nan(dispersal_matrix)]<-0   
           
-          
-          
-          if(print.plots==T){
-            if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1), main = paste("Altered Graph", removeV[j]))} else{plot(weightedgraph)}}
-          N<-N[-patch.delete,]
-          R<-R[-patch.delete]
-          N0<-N0[-patch.delete,]
-          R0<-R0[-patch.delete]
+       #   if(print.plots==T){
+       #     if(length(V(weightedgraph))>1){plot(weightedgraph,layout=layout.circle(holdgraph)[as.numeric(colnames(dispersal_matrix)),],ylim=c(-1,1),xlim=c(-1,1), main = paste("Altered Graph", removeV[j]))} else{plot(weightedgraph)}}
+        #  N<-N[-patch.delete,]
+        #  R<-R[-patch.delete]
+        #  N0<-N0[-patch.delete,]
+        #  R0<-R0[-patch.delete]
         }  
       } 
       L_Bmass<-colMeans(apply(Abund,3,rowSums),na.rm=T)
@@ -333,7 +413,7 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       for(w in 1:numCom){
         localibiomass[w,] <- colMeans(Abund[w,,])	
       }
-      #then average that value over all 30 patches
+      #then average that value over all numCom patches
       Biomass_Time_noreps$IndivBiomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- colMeans(localibiomass,na.rm=T)
       
       #or average that value over all time steps...
