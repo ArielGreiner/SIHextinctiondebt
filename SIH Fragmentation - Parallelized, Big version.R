@@ -23,9 +23,9 @@ set.seed(2)
 
 
 nSpeciesMult <- 11 #c(7,11) #c(7,11,15)
-nPatchDel <-c(5,10,20) #c(10,20)
+nPatchDel <- c(10,25,65) #30 patch variant: c(5,10,20) #c(10,20) 
 #nSpecies <- 11
-numCom<-  30 #100 #30 ##general graph change #changed back to 30 because eurgh new dynamics
+numCom<-  100 #30 ##general graph change 
 
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
 #dispV <- 0.005
@@ -193,7 +193,8 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       for(TS in 1:Tmax){ #run through time steps
         #print(TS)
         Immigrants<-calc.immigration(N,disp,dispersal_matrix)
-        envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*TS+1+(1:numCom)*2*pi/numCom)+1)
+        #old code: envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*TS+1+(1:numCom)*2*pi/numCom)+1)
+        envt.v<-0.5*eAMP*(sin((2*pi/ePeriod)*TS+1+(landscape_run$y)*2*pi/1000)+1)
         #left over bit of code from when all patches were being deleted
         if(is.null(rownames(dispersal_matrix))){ 
           #ring graph code: envt.v<-envt.v[as.numeric(names(dispersal_matrix))]
