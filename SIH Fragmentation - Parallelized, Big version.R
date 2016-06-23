@@ -13,17 +13,17 @@ require(foreach)
 
 #set up parallel
 #cl <- makeCluster(detectCores())
-cl <- makeCluster(2) 
+cl <- makeCluster(3) 
 registerDoParallel(cl)
 getDoParWorkers()
 
-reps<- 4 #10
+reps<- 18 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
 
 nSpeciesMult <- 11 #c(7,11) #c(7,11,15)
-nPatchDel <- c(10,25,65) #seq(5,100, by = 5) #30 patch variant: c(5,10,20) #c(10,20) 
+nPatchDel <- seq(5,95, by = 5) #c(10,25,65) #30 patch variant: c(5,10,20) #c(10,20) 
 #nSpecies <- 11
 numCom<-  100 #30 ##general graph change 
 
