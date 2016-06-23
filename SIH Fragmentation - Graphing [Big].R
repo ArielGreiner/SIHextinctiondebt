@@ -253,7 +253,7 @@ ggplot(EDavg[EDavg$Species == nSpeciesMult[s],],aes(x=Mean_CVLagTime,y=-Mean_Per
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
 
-#not looking at percent changes...(but otherwise, same as above)
+#not looking at percent changes...(but otherwise, same as the non-tryptic graphs above)
 EDavg2 <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale, Species, DelPatches),
                     Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F),
                     Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T),
@@ -521,6 +521,93 @@ ggplot(EDdata_avgchange[EDdata_avgchange$Species == nSpeciesMult[s],],aes(x=fact
   #geom_errorbar(aes(ymin=Lowest_CVChange, ymax=Highest_CVChange),width=0.1, linetype = 2)+
   #geom_errorbar(aes(ymin=Lowest_BiomassChange, ymax=Highest_BiomassChange),width=0.1, linetype = 2)+
   #geom_errorbar(aes(ymin=Lowest_SRLoss, ymax=Highest_SRLoss),width=0.1, linetype = 2)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#summary of all measures in the ED_data dataframe other than the Mean_Bmass and CV_Bmass measures
+EDdata_avgall <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale, Species, DelPatches), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F),
+                           Mean_SRLossNoDel = mean(SRLossNoDel, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.975, na.rm=T, names = F),
+                           Mean_LastDebtTime = mean(LastDebtTime, na.rm=T), SD_LastDebtTime = sd(LastDebtTime, na.rm = T), Lowest_LastDebtTime=quantile(LastDebtTime, probs = 0.025, na.rm=T, names = F), Highest_LastDebtTime=quantile(LastDebtTime, probs = 0.975, na.rm=T, names = F),
+                           Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), Lowest_PercentLoss=quantile(PercentLoss, probs = 0.025, na.rm=T, names = F), Highest_PercentLoss=quantile(PercentLoss, probs = 0.975, na.rm=T, names = F),
+                           
+                           Mean_BiomassChange = mean(BiomassChange, na.rm=T), SD_BiomassChange = sd(BiomassChange, na.rm = T), Lowest_BiomassChange=quantile(BiomassChange, probs = 0.025, na.rm=T, names = F), Highest_BiomassChange=quantile(BiomassChange, probs = 0.975, na.rm=T, names = F), 
+                           Mean_BmassLossNoDel = mean(BmassLossNoDel, na.rm=T), SD_BmassLossNoDel = sd(BmassLossNoDel, na.rm = T), Lowest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.975, na.rm=T, names = F), 
+                           Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F), 
+                           Mean_PercentBmassChange = mean(PercentBmassChange, na.rm=T), SD_PercentBmassChange = sd(PercentBmassChange, na.rm = T), Lowest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.025, na.rm=T, names = F), Highest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.975, na.rm=T, names = F),
+                           
+                           Mean_CVChange = mean(CVChange, na.rm=T), SD_CVChange = sd(CVChange, na.rm = T), Lowest_CVChange=quantile(CVChange, probs = 0.025, na.rm=T, names = F), Highest_CVChange=quantile(CVChange, probs = 0.975, na.rm=T, names = F), Mean_CVChangeNoDel = mean(CVChangeNoDel, na.rm=T), SD_CVChangeNoDel = sd(CVChangeNoDel, na.rm = T), Lowest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.025, na.rm=T, names = F), Highest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.975, na.rm=T, names = F), Mean_CVLagTime = mean(CVLagTime, na.rm=T), SD_CVLagTime = sd(CVLagTime, na.rm = T), Lowest_CVLagTime=quantile(CVLagTime, probs = 0.025, na.rm=T, names = F), Highest_CVLagTime=quantile(CVLagTime, probs = 0.975, na.rm=T, names = F), Mean_PercentCVChange = mean(PercentCVChange, na.rm=T), SD_PercentCVChange = sd(PercentCVChange, na.rm = T), Lowest_PercentCVChange=quantile(PercentCVChange, probs = 0.025, na.rm=T, names = F), Highest_PercentCVChange=quantile(PercentCVChange, probs = 0.975, na.rm=T, names = F))
+
+#SR tryptic-style plot (change due to effect alone)
+ggplot(EDdata_avgall[EDdata_avgall$Species == nSpeciesMult[s],],aes(x=Mean_LastDebtTime,y=(Mean_SRLoss - Mean_SRLossNoDel),color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal, DelPatches)))+ 
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+ #or "Paired"
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_x_log10()+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Time Until Last Extinction")+
+  ylab("Species Lost due to Patch Deletion Effects")+
+  #ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_errorbar(aes(ymin=(Lowest_SRLoss - Lowest_SRLossNoDel),ymax=(Highest_SRLoss - Highest_SRLossNoDel)),width=0.1, linetype = 2)+ 
+  geom_errorbarh(aes(xmin=Lowest_LastDebtTime,xmax=Highest_LastDebtTime),width=0.1, linetype = 2)+
+  facet_grid(Scale~DelPatches)+	  #optional: facet_grid(Scale~DelPatches, scales = "free_x")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#SR tryptic-style plot (change due to deletion alone) <- removed because doesn't make sense to plot this way, no delay in how the change in SR is calculated
+
+#Biomass plot (tryptic style)
+ggplot(EDdata_avgall[EDdata_avgall$Species == nSpeciesMult[s],],aes(x=Mean_LagTime,y=(Mean_BiomassChange - Mean_BmassLossNoDel),color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal, DelPatches)))+ 
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+ #or "Paired"
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_x_log10()+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Time Until Biomass Stabilizes")+
+  ylab("Biomass Lost due to Patch Deletion Effects")+
+  #ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_errorbar(aes(ymin=(Lowest_BiomassChange - Lowest_BmassLossNoDel),ymax=(Highest_BiomassChange - Highest_BmassLossNoDel)),width=0.1, linetype = 2)+
+  geom_errorbarh(aes(xmin=Lowest_LagTime,xmax=Highest_LagTime),width=0.1, linetype = 2)+
+  facet_grid(Scale~DelPatches)+
+  #optional: facet_grid(Scale~DelPatches, scales = "free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#CV plot tryptic-style
+ggplot(EDdata_avgall[EDdata_avgall$Species == nSpeciesMult[s],],aes(x=Mean_CVLagTime,y=(Mean_CVChange - Mean_CVChangeNoDel),color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal, DelPatches)))+ 
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+ #or "Paired"
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  #scale_x_log10()+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Time Until CV Stabilizes")+
+  ylab("Change in CV Due to Effects of Patch Deletion")+
+  #ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_errorbar(aes(ymin=(Lowest_CVChange - Lowest_CVChangeNoDel),ymax=(Highest_CVChange - Highest_CVChangeNoDel)),width=0.1, linetype = 2)+
+  geom_errorbarh(aes(xmin=Lowest_CVLagTime,xmax=Highest_CVLagTime),width=0.1, linetype = 2)+
+  facet_grid(Scale~DelPatches)+	  #optional: facet_grid(Scale~DelPatches, scales = "free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#lag time vs # of patches deleted
+ggplot(EDdata_avgall[EDdata_avgall$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),shape = factor(Patch_remove), size = 2))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_CVLagTime, color = "CV"))+
+  #geom_point(aes(size = 4))+
+  geom_point(aes(y = Mean_LagTime, color = "Biomass"))+
+  geom_point(aes(y = Mean_LastDebtTime, color = "SR"))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Lag Time")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_CVLagTime, ymax=Highest_CVLagTime),width=0.1, linetype = 2)+
+  geom_errorbar(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1, linetype = 2)+
+  geom_errorbar(aes(ymin=Lowest_LastDebtTime, ymax=Highest_LastDebtTime),width=0.1, linetype = 2)+
   #facet_grid(Scale~.,scales = "free_y")+	
   facet_grid(Dispersal~Scale)+
   theme_bw(base_size = 18)+ #gets rid of grey background
@@ -953,6 +1040,15 @@ ggplot(Biomass_TimeSummd2[Biomass_TimeSummd2$Species == nSpeciesMult[s] & Biomas
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#copied from above: 
+Biomass_TimeSummd2 <- summarise(group_by(Biomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_SR = mean(SR, na.rm=T), Upper_SR = quantile(SR, probs=.975, na.rm = T, names = F),Lower_SR = quantile(SR, probs=.025, na.rm = T, names = F), Mean_Biomass = mean(Biomass, na.rm=T), Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F), Mean_IndivBiomass = mean(IndivBiomass, na.rm=T), Upper_IndivBiomass = quantile(IndivBiomass, probs=.975, na.rm = T, names = F),Lower_IndivBiomass = quantile(IndivBiomass, probs=.025, na.rm = T, names = F), Mean_CVTime = mean(CVTime, na.rm=T), Upper_CVTime = quantile(CVTime, probs=.975, na.rm = T, names = F),Lower_CVTime = quantile(CVTime, probs=.025, na.rm = T, names = F))
+EDdata_avgchange <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale, Species, DelPatches), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F),
+                              Mean_SRLossNoDel = mean(SRLossNoDel, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.975, na.rm=T, names = F),
+                              Mean_BiomassChange = mean(BiomassChange, na.rm=T), SD_BiomassChange = sd(BiomassChange, na.rm = T), Lowest_BiomassChange=quantile(BiomassChange, probs = 0.025, na.rm=T, names = F), Highest_BiomassChange=quantile(BiomassChange, probs = 0.975, na.rm=T, names = F), 
+                              Mean_BmassLossNoDel = mean(BmassLossNoDel, na.rm=T), SD_BmassLossNoDel = sd(BmassLossNoDel, na.rm = T), Lowest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.975, na.rm=T, names = F), 
+                              Mean_CVChange = mean(CVChange, na.rm=T), SD_CVChange = sd(CVChange, na.rm = T), Lowest_CVChange=quantile(CVChange, probs = 0.025, na.rm=T, names = F), Highest_CVChange=quantile(CVChange, probs = 0.975, na.rm=T, names = F), Mean_CVChangeNoDel = mean(CVChangeNoDel, na.rm=T), SD_CVChangeNoDel = sd(CVChangeNoDel, na.rm = T), Lowest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.025, na.rm=T, names = F), Highest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.975, na.rm=T, names = F))
+#^ should probably change this in the for loops below to EDdata_avgall...EDdata_avgchange is sort of a redundant data frame in the context of EDdata_avgall
+
 Biomass_TimeSummd3 <- Biomass_TimeSummd2
 for(i in 1:length(dispV)){
 for(j in 1:length(removeV)){
@@ -984,14 +1080,14 @@ ggplot(Biomass_TimeSummd3[Biomass_TimeSummd3$Species == nSpeciesMult[s] & Biomas
   geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.4, color = NA)+
   geom_ribbon(aes(ymin=Lower_Biomass/10,ymax=Upper_Biomass/10),width=0.1, fill = "red", alpha = 0.4, color = NA)+
   geom_ribbon(aes(ymin=Lower_IndivBiomass/10,ymax=Upper_IndivBiomass/10),width=0.1, fill = "cyan", alpha = 0.4, color = NA)+
-  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime/10),width=0.1, fill = "green", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "green", alpha = 0.4, color = NA)+ #read Upper_CVTime/10 until 6.23.2016
   xlab("Time Step")+
   ylab("Biomass")+
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale"))+
   geom_vline(x=predel_collecttime)+
-  geom_hline(aes(yintercept=Mean_BmassLossNoDel/10), color = "red")+
-  geom_hline(aes(yintercept=Mean_CVChangeNoDel), color = "green")+
-  geom_hline(aes(yintercept=Mean_SRLossNoDel), color = "purple")+
+  geom_hline(aes(yintercept=Mean_BmassLossNoDel/10), color = "red", linetype = "dashed")+
+  geom_hline(aes(yintercept=Mean_CVChangeNoDel), color = "green", linetype = "dashed")+
+  geom_hline(aes(yintercept=Mean_SRLossNoDel), color = "purple", linetype = "dashed")+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
@@ -1062,7 +1158,7 @@ BiomassTime_Stand_AllSummd <- summarise(group_by(BiomassTime_Stand_All,Dispersal
 
 ggplot(BiomassTime_Stand_AllSummd[BiomassTime_Stand_AllSummd$Species == nSpeciesMult[s] & BiomassTime_Stand_AllSummd$DelPatches == nPatchDel[p] & BiomassTime_Stand_AllSummd$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal)))+
   geom_line(aes(y = Mean_StandBiomass, colour = "Biomass")) + geom_line(aes(y = Mean_StandIndivBiomass, colour = "Indiv Biomass")) + geom_line(aes(y = Mean_StandSR, colour = "Species Richness"))  +  geom_line(aes(y = Mean_StandCVTime, colour = "CV Biomass"))+
-  scale_x_log10()+ scale_y_log10()+
+  scale_x_log10()+ #scale_y_log10()+
   geom_ribbon(aes(ymin=Lower_StandSR,ymax=Upper_StandSR),width=0.1, fill = "purple", alpha = 0.1, color = NA)+
   geom_ribbon(aes(ymin=Lower_StandBiomass,ymax=Upper_StandBiomass),width=0.1, fill = "red", alpha = 0.1, color = NA)+
   geom_ribbon(aes(ymin=Lower_StandIndivBiomass,ymax=Upper_StandIndivBiomass),width=0.1, fill = "cyan", alpha = 0.2, color = NA)+
