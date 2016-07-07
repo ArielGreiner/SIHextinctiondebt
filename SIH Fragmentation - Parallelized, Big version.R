@@ -23,14 +23,14 @@ set.seed(2)
 
 
 nSpeciesMult <- 11 #c(7,11) #c(7,11,15)
-nPatchDel <- seq(5,95, by = 5) #c(10,25,65) #30 patch variant: c(5,10,20) #c(10,20) 
+nPatchDel <- c(5,10,20,40,80) #seq(5,95, by = 5) #c(10,25,65) #30 patch variant: c(5,10,20) #c(10,20) 
 #nSpecies <- 11
 numCom<-  100 #30 ##general graph change 
 
 randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links 
 #dispV <- 0.005
-#dispV <- c(0.0005, 0.005, 0.015)
-dispV<- c(0.0005,0.005,0.015,0.05)
+dispV <- c(0.0005, 0.005, 0.015)
+#dispV<- c(0.0005,0.005,0.015,0.05)
 dd<-1 #distance decay
 numLinks<-numCom*2
 sumby <- 20 #19
