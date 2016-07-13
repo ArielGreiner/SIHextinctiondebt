@@ -71,6 +71,11 @@ ED_data<-data.frame(Rep=rep(1:reps,each=2*length(dispV)*length(removeV)*length(n
 Biomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),
 Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, VarIndivBiomass = NA, CVTime = NA, SR = NA)
 
+#the dataframe below really won't work if nSpeciesMult has multiple values...removed that column
+SpeciesBiomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*4*length(nPatchDel)),
+Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*4*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*4*length(nPatchDel)),DelPatches = rep(nPatchDel, each = length(sampleV)*4), Scale=rep(c("Local","Regional","Patch A","Patch B"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Species1 = NA, Species2 = NA, Species3 = NA, Species4 = NA, Species5 = NA, Species6 = NA, Species7 = NA, Species8 = NA, Species9 = NA, Species10 = NA, Species11 = NA)
+
+
 PropBiomass_Time <- data.frame(Rep=rep(1:reps, each = length(sampleV)*length(removeV)*length(dispV)*2*length(nSpeciesMult)*length(nPatchDel)),
 Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, CVTime = NA, SR = NA)
 
@@ -100,6 +105,9 @@ ED_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=2*length(nSpeciesMult)
 #SR_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), SR = NA)
 
 Biomass_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, VarIndivBiomass = NA, CVTime = NA, SR = NA)
+
+SpeciesBiomass_Time_noreps <- data.frame(Rep=r,
+Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*4*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*4*length(nPatchDel)),DelPatches = rep(nPatchDel, each = length(sampleV)*4), Scale=rep(c("Local","Regional","Patch A","Patch B"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Species1 = NA, Species2 = NA, Species3 = NA, Species4 = NA, Species5 = NA, Species6 = NA, Species7 = NA, Species8 = NA, Species9 = NA, Species10 = NA, Species11 = NA)
 
 PropBiomass_Time_noreps <- data.frame(Rep=r,Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*2*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(sampleV)*2*length(nPatchDel)), DelPatches = rep(nPatchDel, each = length(sampleV)*2), Scale=rep(c("Local","Regional"), each = length(sampleV)),TimeStep = rep(1:length(sampleV)), Biomass = NA, IndivBiomass = NA, CVTime = NA, SR = NA)
 
@@ -750,7 +758,7 @@ PercentBiomass_Time_noreps$SR[PercentBiomass_Time_noreps$Rep==r & PercentBiomass
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
   #return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, SR_Time_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
-  return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps, PropBiomass_Time_noreps, PercentBiomass_Time_noreps))
+  return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps, PropBiomass_Time_noreps, PercentBiomass_Time_noreps, SpeciesBiomass_Time_noreps))
 }
 
 #run simulation function in parallel
@@ -766,10 +774,11 @@ for(r in 1:reps){
   EffectiveDiv_Time[EffectiveDiv_Time$Rep==r,]<-Sim_data[[6]]
   PropBiomass_Time[PropBiomass_Time$Rep==r,]<-Sim_data[[7]]
   PercentBiomass_Time[PercentBiomass_Time$Rep==r,]<-Sim_data[[8]]
+  SpeciesBiomass_Time[SpeciesBiomass_Time$Rep==r,]<-Sim_data[[9]]
 }  
 
 #save(Component_data_reps, Meta_dyn_reps, ED_data, SR_Time, Biomass_Time, IndivPatch, EffectiveDiv_Time, file = "FullFragmentationDataSet.RData")
-save(Component_data_reps, Meta_dyn_reps, ED_data, Biomass_Time, IndivPatch, EffectiveDiv_Time,PropBiomass_Time,PercentBiomass_Time, file = "FullFragmentationDataSet.RData")
+save(Component_data_reps, Meta_dyn_reps, ED_data, Biomass_Time, IndivPatch, EffectiveDiv_Time,PropBiomass_Time,PercentBiomass_Time, SpeciesBiomass_Time, file = "FullFragmentationDataSet.RData")
 
 
 
