@@ -407,7 +407,7 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
       L_SR<-colMeans(apply((Abund>0),3,rowSums),na.rm=T) #colMeans(apply((Abund>0),3,rowSums, na.rm=T)) <- changed for the same reason as the local SR measure was changed on 6.14.2016
       
-      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
+     Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Regional"] <- sum(L_Bmass_sep[predel_collecttime,patch.delete])
       #line below: absolute difference in average local biomass as calculated with vs without the deleted patches
       ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==dispV[i] & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpeciesMult[s] & ED_data_noreps$DelPatches==nPatchDel[p] & ED_data_noreps$Scale=="Local"] <- abs(rowMeans(L_Bmass_sep, na.rm = T)[predel_collecttime] - rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)[predel_collecttime])
@@ -456,10 +456,11 @@ ED_data_noreps$VarIndivBmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dis
       localibiomass <- matrix(nrow = numCom, ncol = length(sampleV))
       varlocalibiomass <- matrix(nrow = numCom, ncol = length(sampleV))
       for(w in 1:numCom){
-        localibiomass[w,] <- colSums(Abund[w,,])/apply((Abund>0),3,rowSums)[w,]
+        localibiomass[w,] <- L_Bmass_sep[,w]/apply((Abund>0),3,rowSums)[w,]
+        #colSums(Abund[w,,])/apply((Abund>0),3,rowSums)[w,] <- not sure why, when doing it this way, got higher values of local indiv biomass than local biomass (7.14.2016)
         #^ adjusted so only taking a value over the extant species
         #localibiomass[w,] <- colMeans(Abund[w,,])	
-        ###still need to fix below here
+        ###still need to fix below here <- dealt with, i think (but after the above change...7.14.16)
         onepatchAbund <- alterAbund[w,,]
         varlocalibiomass[w,] <- apply(onepatchAbund,2,var,na.rm = T)
       }
