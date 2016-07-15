@@ -169,7 +169,7 @@ for(i in 1:length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV))
 #for(j in 1:3) 
       #counter <- 0
       
-      ##general graph code
+      ##general graph code 
           landscape_run<-landscape
           graph_run<-graph
           d<-shortest.paths(graph_run, mode="all", weights=NULL, algorithm="automatic")
@@ -366,7 +366,9 @@ for(i in 1:length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV))
                 patch.delete<-order(degree(graph_run),decreasing = T)[1:PatchDel]
               } else{patch.delete<-order(btw,decreasing = T)[1:PatchDel] }
               } else{
-                if(j==2){patch.delete<-order(betweenness(graph_run),decreasing=F)[1:PatchDel]} else{
+                if(j==2){btw<-betweenness(graph_run) #added 7.15.2016
+                	patch.delete<-order(betweenness(graph_run),decreasing=F)[1:PatchDel]} else{
+                  btw<-betweenness(graph_run) #added 7.15.2016, useless in this region...
                   patch.delete<-sample(nrow(N),PatchDel)}}    
               graph_run<-delete.vertices(graph_run,patch.delete)
               landscape_run<-landscape_run[-patch.delete,]
