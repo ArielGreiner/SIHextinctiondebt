@@ -118,7 +118,7 @@ IndivPatch_noreps <- data.frame(Rep=r, Dispersal=rep(dispV, each = length(remove
   EffectiveDiv_Time_noreps <- data.frame(Rep=r, Dispersal=rep(dispV, each = length(removeV)*length(sampleV)*3*length(nSpeciesMult)*length(nPatchDel)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T), each = length(sampleV)*3*length(nSpeciesMult)*length(nPatchDel)), Species = rep(nSpeciesMult, each = 3*length(nPatchDel)*length(sampleV)), DelPatches = rep(nPatchDel, each = length(sampleV)*3),
 Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:length(sampleV)), ExpShannon = NA, ExpShannonMult = NA)
 
-for(i in 1:length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV)){
+for(i in 1:(length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV))){
 #for(s in 1:length(nSpeciesMult))
 #for(p in 1:length(nPatchDel))
 	PatchDel <- Base[i,"DelPatches"]
