@@ -2,6 +2,8 @@ setwd("~/GitHub/SIH Extinction Debt")
 #source("./Functions/rewire.R") ##general graph change
 #source("./Functions/create_random_net.r") ##general graph change
 #source("./Functions/addweights.r") ##general graph change
+rm(list=ls())
+Sim_data <- 0 #probably redundant given the line above, but just in case
 require(igraph)
 require(dplyr)
 require(ggplot2)
@@ -92,7 +94,7 @@ Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:
 #initialize community network use rewire for lattice or small world - use random for random
 pb <- txtProgressBar(min = 0, max = reps, style = 3)
 SIH_frag<- function(){
-  
+print(r)  
 Base <- data.frame(Dispersal=rep(dispV,each=length(nSpeciesMult)*length(nPatchDel)), Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(dispV)*length(nSpeciesMult)*length(nPatchDel)),Species = rep(nSpeciesMult, each = length(nPatchDel)), DelPatches = rep(nPatchDel))  
   
 Component_data_noreps<-data.frame(Rep=r,Dispersal=rep(dispV,each=length(nSpeciesMult)*length(nPatchDel)*length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(nSpeciesMult)*length(nPatchDel)),Species=rep(nSpeciesMult, each = length(nPatchDel)), DelPatches=rep(nPatchDel), Component_num=NA,Component_size=NA, Component_range=NA)
@@ -119,6 +121,7 @@ IndivPatch_noreps <- data.frame(Rep=r, Dispersal=rep(dispV, each = length(remove
 Metric=rep(c("Alpha","Gamma","Beta"), each = length(sampleV)), TimeStep = rep(1:length(sampleV)), ExpShannon = NA, ExpShannonMult = NA)
 
 for(i in 1:(length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV))){
+  print(i)
 #for(s in 1:length(nSpeciesMult))
 #for(p in 1:length(nPatchDel))
 	PatchDel <- Base[i,"DelPatches"]
@@ -785,6 +788,9 @@ SpeciesBiomass_Time_noreps$Biomass[SpeciesBiomass_Time_noreps$Rep==r & SpeciesBi
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
   #return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, SR_Time_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
+  ED_data_lastrep_ <<- ED_data_noreps
+  Biomass_Time_lastrep <<- Biomass_Time_noreps
+  SpeciesBiomass_Time_lastrep <<- SpeciesBiomass_Time_noreps
   return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps, PropBiomass_Time_noreps, PercentBiomass_Time_noreps, SpeciesBiomass_Time_noreps))
 }
 
