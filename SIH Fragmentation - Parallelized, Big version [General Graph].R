@@ -59,6 +59,11 @@ DT<- 0.08 # % size of discrete "time steps"
 sampleV<-seq(initial_time + samplelength,Tmax,by=samplelength) #controls which time points are sampled from, this ensures that the first 20 samples (1 sine wave worth) taken are of the intact network <- 60 now
 removeV<-c("Max betweenness","Min betweenness","Random")
 
+ED_data_lastrep <<- data.frame()
+Biomass_Time_lastrep <<- data.frame()
+SpeciesBiomass_Time_lastrep <<- data.frame()
+TimeStamp <<- 0
+
 Component_data_reps<-data.frame(Rep=rep(1:reps, each = length(nSpeciesMult)*length(nPatchDel)*length(dispV)*length(removeV)),Dispersal=rep(dispV,each=length(nSpeciesMult)*length(nPatchDel)*length(removeV)),Patch_remove=rep(factor(removeV,levels = c("Min betweenness","Random","Max betweenness"),ordered = T),each=length(nSpeciesMult)*length(nPatchDel)),Species=rep(nSpeciesMult, each = length(nPatchDel)), DelPatches=rep(nPatchDel), Component_num=NA,Component_size=NA, Component_range=NA)
 
 #Data frame for recording the proportion of biomass accounted for by each of species sorting, mass effects and base growth at each sampled time point 
@@ -788,15 +793,17 @@ SpeciesBiomass_Time_noreps$Biomass[SpeciesBiomass_Time_noreps$Rep==r & SpeciesBi
   Sys.sleep(0.1)
   setTxtProgressBar(pb, r)
   #return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, SR_Time_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps))
-  ED_data_lastrep_ <<- ED_data_noreps
+  ED_data_lastrep <<- ED_data_noreps
   Biomass_Time_lastrep <<- Biomass_Time_noreps
   SpeciesBiomass_Time_lastrep <<- SpeciesBiomass_Time_noreps
+  TimeStamp <<- r
   return(list(Component_data_noreps,Meta_dyn_noreps,ED_data_noreps, Biomass_Time_noreps, IndivPatch_noreps, EffectiveDiv_Time_noreps, PropBiomass_Time_noreps, PercentBiomass_Time_noreps, SpeciesBiomass_Time_noreps))
 }
 
 #run simulation function in parallel
 Sim_data_parallel<-foreach(r = 1:reps,.packages=c("igraph","dplyr","tidyr","vegan","data.table")) %dopar% SIH_frag()
 for(r in 1:reps){
+  paste("r = ",TimeStamp)
   Sim_data<-Sim_data_parallel[[r]]
   Component_data_reps[Component_data_reps$Rep==r,]<-Sim_data[[1]]
   Meta_dyn_reps[Meta_dyn_reps$Rep==r,]<-Sim_data[[2]]
