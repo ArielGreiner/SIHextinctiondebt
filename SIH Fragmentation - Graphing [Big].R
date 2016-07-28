@@ -475,7 +475,7 @@ ggplot(EDdata_avgchange[EDdata_avgchange$Species == nSpeciesMult[s],],aes(x=fact
   geom_point(aes(y = Mean_SRLoss - Mean_SRLossNoDel, color = "SR Loss"))+
   scale_shape_manual(values=c(15,19, 17))+
   xlab("Number of Patches Deleted")+
-  ylab("Change")+
+  ylab("Change due to Indirect Effects")+
   scale_y_log10()+
   #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
   #geom_errorbar(aes(ymin=Lowest_CVChange, ymax=Highest_CVChange),width=0.1, linetype = 2)+
@@ -1040,36 +1040,45 @@ ggplot(Biomass_TimeSummd2[Biomass_TimeSummd2$Species == nSpeciesMult[s] & Biomas
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
-#copied from above: 
+#copied from above
 Biomass_TimeSummd2 <- summarise(group_by(Biomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_SR = mean(SR, na.rm=T), Upper_SR = quantile(SR, probs=.975, na.rm = T, names = F),Lower_SR = quantile(SR, probs=.025, na.rm = T, names = F), Mean_Biomass = mean(Biomass, na.rm=T), Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F), Mean_IndivBiomass = mean(IndivBiomass, na.rm=T), Upper_IndivBiomass = quantile(IndivBiomass, probs=.975, na.rm = T, names = F),Lower_IndivBiomass = quantile(IndivBiomass, probs=.025, na.rm = T, names = F), Mean_CVTime = mean(CVTime, na.rm=T), Upper_CVTime = quantile(CVTime, probs=.975, na.rm = T, names = F),Lower_CVTime = quantile(CVTime, probs=.025, na.rm = T, names = F))
+
 EDdata_avgchange <- summarise(group_by(ED_data,Dispersal,Patch_remove,Scale, Species, DelPatches), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F),
                               Mean_SRLossNoDel = mean(SRLossNoDel, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_SRLossNoDel=quantile(SRLossNoDel, probs = 0.975, na.rm=T, names = F),
                               Mean_BiomassChange = mean(BiomassChange, na.rm=T), SD_BiomassChange = sd(BiomassChange, na.rm = T), Lowest_BiomassChange=quantile(BiomassChange, probs = 0.025, na.rm=T, names = F), Highest_BiomassChange=quantile(BiomassChange, probs = 0.975, na.rm=T, names = F), 
-                              Mean_BmassLossNoDel = mean(BmassLossNoDel, na.rm=T), SD_BmassLossNoDel = sd(BmassLossNoDel, na.rm = T), Lowest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.975, na.rm=T, names = F), 
+                              Mean_BmassLossNoDel = mean(BmassLossNoDel, na.rm=T), SD_BmassLossNoDel = sd(BmassLossNoDel, na.rm = T), Lowest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_BmassLossNoDel=quantile(BmassLossNoDel, probs = 0.975, na.rm=T, names = F),
+                              Mean_IndivBmassLossNoDel = mean(IndivBmassLossNoDel, na.rm=T), SD_IndivBmassLossNoDel = sd(IndivBmassLossNoDel, na.rm = T), Lowest_IndivBmassLossNoDel=quantile(IndivBmassLossNoDel, probs = 0.025, na.rm=T, names = F), Highest_IndivBmassLossNoDel=quantile(IndivBmassLossNoDel, probs = 0.975, na.rm=T, names = F), 
                               Mean_CVChange = mean(CVChange, na.rm=T), SD_CVChange = sd(CVChange, na.rm = T), Lowest_CVChange=quantile(CVChange, probs = 0.025, na.rm=T, names = F), Highest_CVChange=quantile(CVChange, probs = 0.975, na.rm=T, names = F), Mean_CVChangeNoDel = mean(CVChangeNoDel, na.rm=T), SD_CVChangeNoDel = sd(CVChangeNoDel, na.rm = T), Lowest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.025, na.rm=T, names = F), Highest_CVChangeNoDel=quantile(CVChangeNoDel, probs = 0.975, na.rm=T, names = F))
 #^ should probably change this in the for loops below to EDdata_avgall...EDdata_avgchange is sort of a redundant data frame in the context of EDdata_avgall
 
 Biomass_TimeSummd3 <- Biomass_TimeSummd2
 for(i in 1:length(dispV)){
-for(j in 1:length(removeV)){
-for(s in 1:length(nSpeciesMult)){
-for(p in 1:length(nPatchDel)){
-  Biomass_TimeSummd3$Mean_BmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- 
-    Biomass_TimeSummd3$Mean_Biomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_BmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"]
-  
-  Biomass_TimeSummd3$Mean_SRLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- Biomass_TimeSummd3$Mean_SR[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_SRLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"] 
-  
-  Biomass_TimeSummd3$Mean_CVChangeNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- 
-    Biomass_TimeSummd3$Mean_CVTime[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_CVChangeNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"]
-  
-  Biomass_TimeSummd3$Mean_BmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- 
-    Biomass_TimeSummd3$Mean_Biomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_BmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"]
-  
-  Biomass_TimeSummd3$Mean_SRLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- Biomass_TimeSummd3$Mean_SR[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_SRLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"] 
-  
-  Biomass_TimeSummd3$Mean_CVChangeNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- 
-    Biomass_TimeSummd3$Mean_CVTime[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_CVChangeNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"]
-  }}}}
+  for(j in 1:length(removeV)){
+    for(s in 1:length(nSpeciesMult)){
+      for(p in 1:length(nPatchDel)){
+        Biomass_TimeSummd3$Mean_BmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- 
+          Biomass_TimeSummd3$Mean_Biomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_BmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"]
+        
+        Biomass_TimeSummd3$Mean_IndivBmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- 
+          Biomass_TimeSummd3$Mean_IndivBiomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_IndivBmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"]
+        
+        Biomass_TimeSummd3$Mean_SRLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- Biomass_TimeSummd3$Mean_SR[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_SRLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"] 
+        
+        Biomass_TimeSummd3$Mean_CVChangeNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"] <- 
+          Biomass_TimeSummd3$Mean_CVTime[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Local"][predel_collecttime] - EDdata_avgchange$Mean_CVChangeNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Local"]
+        
+        Biomass_TimeSummd3$Mean_BmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- 
+          Biomass_TimeSummd3$Mean_Biomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_BmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"]
+        
+        Biomass_TimeSummd3$Mean_IndivBmassLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- 
+          Biomass_TimeSummd3$Mean_IndivBiomass[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_IndivBmassLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"]
+        
+        Biomass_TimeSummd3$Mean_SRLossNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- Biomass_TimeSummd3$Mean_SR[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_SRLossNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"] 
+        
+        Biomass_TimeSummd3$Mean_CVChangeNoDel[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"] <- 
+          Biomass_TimeSummd3$Mean_CVTime[Biomass_TimeSummd3$Dispersal==dispV[i] & Biomass_TimeSummd3$Patch_remove==removeV[j] & Biomass_TimeSummd3$Species==nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches==nPatchDel[p] & Biomass_TimeSummd3$Scale=="Regional"][predel_collecttime] - EDdata_avgchange$Mean_CVChangeNoDel[EDdata_avgchange$Dispersal==dispV[i] & EDdata_avgchange$Patch_remove==removeV[j] & EDdata_avgchange$Species==nSpeciesMult[s] & EDdata_avgchange$DelPatches==nPatchDel[p] & EDdata_avgchange$Scale=="Regional"]
+      }}}}
+
 
 #CV, Biomass, Indiv Biomass, SR on one graph <- Goal: plot this with the no-del variants as lines in the same colours
 ggplot(Biomass_TimeSummd3[Biomass_TimeSummd3$Species == nSpeciesMult[s] & Biomass_TimeSummd3$DelPatches == nPatchDel[p] & Biomass_TimeSummd3$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal)))+
@@ -1086,6 +1095,7 @@ ggplot(Biomass_TimeSummd3[Biomass_TimeSummd3$Species == nSpeciesMult[s] & Biomas
   ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale"))+
   geom_vline(x=predel_collecttime)+
   geom_hline(aes(yintercept=Mean_BmassLossNoDel/10), color = "red", linetype = "dashed")+
+  geom_hline(aes(yintercept=Mean_IndivBmassLossNoDel/10), color = "cyan", linetype = "dashed")+
   geom_hline(aes(yintercept=Mean_CVChangeNoDel), color = "green", linetype = "dashed")+
   geom_hline(aes(yintercept=Mean_SRLossNoDel), color = "purple", linetype = "dashed")+
   facet_grid(Dispersal~Patch_remove)+
@@ -1254,6 +1264,45 @@ PercentBiomass_Time_Bin <- PercentBiomass_Time %>%
 ggplot(PercentBiomass_Time_Bin[PercentBiomass_Time_Bin$Species == nSpeciesMult[s] & PercentBiomass_Time_Bin$DelPatches == nPatchDel[p] & PercentBiomass_Time_Bin$Scale == "Local",],aes(x=TimeStepRound,group=interaction(Patch_remove, Dispersal)))+
   #geom_point()+ 
   geom_line(aes(y = Mean_BiomassFinal, colour = "Biomass")) + geom_line(aes(y = Mean_SRFinal, colour = "Species Richness")) + geom_line(aes(y = Mean_IndivBiomassFinal, colour = "Average Biomass per Species"))  +  geom_line(aes(y = Mean_CVTimeFinal, colour = "CV Biomass"))+
+  scale_x_log10()+
+  scale_y_log10()+
+  geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.1, color = NA)+
+  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, fill = "green", alpha = 0.1, color = NA)+
+  geom_ribbon(aes(ymin=Lower_IndivBiomass,ymax=Upper_IndivBiomass),width=0.1, fill = "red", alpha = 0.1, color = NA)+
+  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "cyan", alpha = 0.2, color = NA)+
+  xlab("Time Step")+
+  ylab("Percentage Measure")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale", "Binned by 20"))+
+  geom_vline(x=predel_collecttime/20)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines  
+
+EffectiveDiv_TimeSummd <- summarise(group_by(EffectiveDiv_Time,Dispersal,Patch_remove,Metric, Species, DelPatches, TimeStep), Mean_ExpShannon = mean(ExpShannon, na.rm=T), Upper_ExpShannon = quantile(ExpShannon, probs=.975, na.rm = T, names = F),Lower_ExpShannon = quantile(ExpShannon, probs=.025, na.rm = T, names = F), Mean_ExpShannonMult = mean(ExpShannonMult, na.rm=T), Upper_ExpShannonMult = quantile(ExpShannonMult, probs=.975, na.rm = T, names = F),Lower_ExpShannonMult = quantile(ExpShannonMult, probs=.025, na.rm = T, names = F))
+
+ggplot(EffectiveDiv_TimeSummd[EffectiveDiv_TimeSummd$Species == nSpeciesMult[s] & EffectiveDiv_TimeSummd$DelPatches == nPatchDel[p],],aes(y = Mean_ExpShannon, x=TimeStep,group=interaction(Patch_remove, Dispersal, Metric), color = Metric, fill = Metric))+
+  #geom_point()+ 
+  geom_line() +
+  #divide biomass and indivbiomass by 100 if 'regional'
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_ExpShannon,ymax=Upper_ExpShannon),width=0.1, color = NA, alpha = 0.1)+
+  xlab("Time Step")+
+  ylab("Effective Diversity Measure")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=predel_collecttime)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+SpeciesBiomass_TimeSummd <- summarise(group_by(SpeciesBiomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_Biomass = mean(Biomass, na.rm=T), SD_Biomass = sd(Biomass, na.rm = T),Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F))
+
+ggplot(SpeciesBiomass_TimeSummd[SpeciesBiomass_TimeSummd$DelPatches == nPatchDel[p] & PercentBiomass_Time_Bin$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal)))+
+  #geom_point()+ 
+  geom_line(aes(y = Mean_Biomass, colour = "Biomass"))+ ####not done fixing
   scale_x_log10()+
   scale_y_log10()+
   geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.1, color = NA)+
