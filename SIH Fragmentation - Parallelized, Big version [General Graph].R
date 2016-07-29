@@ -1,4 +1,4 @@
-setwd("~/GitHub/SIH Extinction Debt")
+setwd("~/Dropbox/Gonzalez Lab/Extinction Debt Project/Outputs from Edmonton")
 #source("./Functions/rewire.R") ##general graph change
 #source("./Functions/create_random_net.r") ##general graph change
 #source("./Functions/addweights.r") ##general graph change
