@@ -474,6 +474,7 @@ ED_data_noreps$VarIndivBmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dis
       varlocalibiomass <- matrix(nrow = numCom, ncol = length(sampleV))
       for(w in 1:numCom){
         localibiomass[w,] <- L_Bmass_sep[,w]/apply((Abund>0),3,rowSums)[w,]
+        localibiomass[is.nan(localibiomass[w,])] <- 0
         #colSums(Abund[w,,])/apply((Abund>0),3,rowSums)[w,] <- not sure why, when doing it this way, got higher values of local indiv biomass than local biomass (7.14.2016)
         #^ adjusted so only taking a value over the extant species
         #localibiomass[w,] <- colMeans(Abund[w,,])	
