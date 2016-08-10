@@ -1357,21 +1357,24 @@ ggplot(EffectiveDiv_TimeSummd[EffectiveDiv_TimeSummd$Species == nSpeciesMult[s] 
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#Option 1: 0's show up as 0's
 SpeciesBiomass_TimeSummd <- summarise(group_by(SpeciesBiomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_Biomass = mean(Biomass, na.rm=T), SD_Biomass = sd(Biomass, na.rm = T),Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F))
 
-ggplot(SpeciesBiomass_TimeSummd[SpeciesBiomass_TimeSummd$DelPatches == nPatchDel[p] & PercentBiomass_Time_Bin$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal)))+
+#Option 2: 0's show up as NA's
+SpeciesBiomass_Time2 <- SpeciesBiomass_Time
+SpeciesBiomass_Time2[which(SpeciesBiomass_Time2==0)] <- NA
+SpeciesBiomass_TimeSummd2 <- summarise(group_by(SpeciesBiomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_Biomass = mean(Biomass, na.rm=T), SD_Biomass = sd(Biomass, na.rm = T),Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F))
+
+ggplot(SpeciesBiomass_TimeSummd[SpeciesBiomass_TimeSummd$DelPatches == nPatchDel[p] & SpeciesBiomass_TimeSummd$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal, Species), fill = factor(Species), color = factor(Species)))+
   #geom_point()+ 
-  geom_line(aes(y = Mean_Biomass, colour = "Biomass"))+ ####not done fixing
+  geom_line(aes(y = Mean_Biomass))+ ####not done fixing
   scale_x_log10()+
   scale_y_log10()+
-  geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.1, color = NA)+
-  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, fill = "green", alpha = 0.1, color = NA)+
-  geom_ribbon(aes(ymin=Lower_IndivBiomass,ymax=Upper_IndivBiomass),width=0.1, fill = "red", alpha = 0.1, color = NA)+
-  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "cyan", alpha = 0.2, color = NA)+
+  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, alpha = 0.1, color = NA)+
   xlab("Time Step")+
-  ylab("Percentage Measure")+
-  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted", "Local scale", "Binned by 20"))+
-  geom_vline(x=predel_collecttime/20)+
+  ylab("Biomass")+
+  ggtitle(paste(nPatchDel[p], "patches deleted", "Local scale"))+
+  geom_vline(x=predel_collecttime)+
   facet_grid(Dispersal~Patch_remove)+
   #facet_grid(Dispersal~Patch_remove,scale="free")+
   #facet_grid(Scale~Patch_remove,scale="free")+
