@@ -15,12 +15,12 @@ require(foreach)
 
 
 #set up parallel
-cl <- makeCluster(detectCores())
-#cl <- makeCluster(3) 
+#cl <- makeCluster(detectCores())
+cl <- makeCluster(2) 
 registerDoParallel(cl)
 getDoParWorkers()
 
-reps<- 8 #10
+reps<- 4 #10
 print.plots<-F # set this to true if you want to see the network as the sim runs - it makes it slower
 set.seed(2)
 
@@ -425,15 +425,16 @@ for(i in 1:(length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV)
       L_Bmass_sep<-data.frame(t(apply(Abund,3,rowSums)))
       R_Bmass<-apply(Abund,3,sum,na.rm=T)
       R_SR<-colSums(apply(Abund,3,colSums, na.rm=T)>0)
-      L_SR<-colMeans(apply((Abund>0),3,rowSums),na.rm=T) #colMeans(apply((Abund>0),3,rowSums, na.rm=T)) <- changed for the same reason as the local SR measure was changed on 6.14.2016
+      L_SR<-colMeans(apply((Abund>0),3,rowSums),na.rm=T) 
+      #colMeans(apply((Abund>0),3,rowSums, na.rm=T)) <- changed for the same reason as the local SR measure was changed on 6.14.2016
       
      Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==disp & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpecies & Biomass_Time_noreps$DelPatches == PatchDel & Biomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep, na.rm = T)
       ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Regional"] <- sum(L_Bmass_sep[predel_collecttime,patch.delete])
       
-      ED_data_noreps$Mean_BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Regional"] <- mean(rowSums(L_Bmass_sep[1:predel_collecttime,patch.delete])
-      
-      #line below: absolute difference in average local biomass as calculated with vs without the deleted patches
-      ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- abs(rowMeans(L_Bmass_sep, na.rm = T)[predel_collecttime] - rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)[predel_collecttime])  #want the above as opposed to rowMeans(L_Bmass_sep[,patch.delete], na.rm = T) because care about how the mean changes not the mean as contained in just those deleted patches, in the regional case not dealing with a mean so can just use the original value 
+      ED_data_noreps$Mean_BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Regional"] <- mean(rowSums(L_Bmass_sep[1:predel_collecttime,patch.delete]))
+
+ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- abs(rowMeans(L_Bmass_sep, na.rm = T)[predel_collecttime] - rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)[predel_collecttime])  
+      #want the above as opposed to rowMeans(L_Bmass_sep[,patch.delete], na.rm = T) because care about how the mean changes not the mean as contained in just those deleted patches, in the regional case not dealing with a mean so can just use the original value 
    
    ED_data_noreps$Mean_BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- mean(abs(rowMeans(L_Bmass_sep, na.rm = T)[1:predel_collecttime] - rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)[1:predel_collecttime]), na.rm=T) #shouldn't need the na.rm = T but will leave it in just in case...
       
