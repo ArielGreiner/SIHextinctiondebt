@@ -538,7 +538,7 @@ missingpatchversion <- c(rep(NA,(ePeriod/(samplelength))),tapply(1:predel_collec
 
 ED_data_noreps$CVChangeNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- abs(allpatchversion[predel_collecttime] - missingpatchversion[predel_collecttime])
 
-ED_data_noreps$CVChangeNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- mean(abs(allpatchversion[1:predel_collecttime] - missingpatchversion[1:predel_collecttime]),na.rm=T) #check later if need the na.rm=T
+ED_data_noreps$Mean_CVChangeNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- mean(abs(allpatchversion[1:predel_collecttime] - missingpatchversion[1:predel_collecttime]),na.rm=T) #check later if need the na.rm=T
 
 
 #regional CV over time (seems to not quite work, not sure how to fix)
