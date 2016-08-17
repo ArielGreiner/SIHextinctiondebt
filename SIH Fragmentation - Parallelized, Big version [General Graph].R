@@ -974,7 +974,7 @@ IndirectED_data_noreps$PercentCVChange[IndirectED_data_noreps$Rep==r & IndirectE
 #Local
 AvgNumpredel <- mean(IndirectBiomass_Time_noreps$SR[IndirectBiomass_Time_noreps$Scale == "Local" & IndirectBiomass_Time_noreps$Dispersal == disp & IndirectBiomass_Time_noreps$Patch_remove == removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Rep == r][1:predel_collecttime], na.rm=T)
 
-AvgBiomasspredel <- mean(IndirectBiomass_Time_noreps$Biomass[IndirectBiomass_Time_noreps$Scale == "Local" & IndirectBiomass_Time_noreps$Dispersal == disp & IndirectBiomass_Time_noreps$Patch_remove == removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDeLocall & IndirectBiomass_Time_noreps$Rep == r][1:predel_collecttime],na.rm=T)
+AvgBiomasspredel <- mean(IndirectBiomass_Time_noreps$Biomass[IndirectBiomass_Time_noreps$Scale == "Local" & IndirectBiomass_Time_noreps$Dispersal == disp & IndirectBiomass_Time_noreps$Patch_remove == removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Rep == r][1:predel_collecttime],na.rm=T)
 
 AvgCVpredel <- mean(IndirectBiomass_Time_noreps$CVTime[IndirectBiomass_Time_noreps$Scale == "Local" & IndirectBiomass_Time_noreps$Dispersal == disp & IndirectBiomass_Time_noreps$Patch_remove == removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Rep == r][1:predel_collecttime],na.rm=T)
 
