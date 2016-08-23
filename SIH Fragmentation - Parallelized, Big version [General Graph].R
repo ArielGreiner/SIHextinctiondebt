@@ -34,7 +34,7 @@ randV<- 50 #c(10,50,90)#seq(10,90,by=20) #randV/100 = % random links
 #dispV <- 0.005
 dispV <- c(0.0005, 0.005, 0.015)
 #dispV<- c(0.0005,0.005,0.015,0.05)
-dd<-1 #distance decay
+dd<- 0.002 #1 #distance decay
 numLinks<-numCom*2
 sumby <- 20 #19
 
@@ -1058,6 +1058,8 @@ IndirectED_data_noreps$PercentCVChange[IndirectED_data_noreps$Rep==r & IndirectE
 PropBiomass_Time_noreps$Biomass[PropBiomass_Time_noreps$Rep==r & PropBiomass_Time_noreps$Dispersal==disp & PropBiomass_Time_noreps$Patch_remove==removeV[j] & PropBiomass_Time_noreps$Species == nSpecies & PropBiomass_Time_noreps$DelPatches == PatchDel & PropBiomass_Time_noreps$Scale=="Regional"] <- R_Bmass/Biomass_Time_noreps$Biomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==disp & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpecies & Biomass_Time_noreps$DelPatches == PatchDel & Biomass_Time_noreps$Scale=="Regional"][predel_collecttime] 
       
       #colMeans(apply(Abund,3,colSums,na.rm = T))/Biomass_Time_noreps$IndivBiomass[Biomass_Time_noreps$Rep==r & Biomass_Time_noreps$Dispersal==dispV[i] & Biomass_Time_noreps$Patch_remove==removeV[j] & Biomass_Time_noreps$Species == nSpeciesMult[s] & Biomass_Time_noreps$DelPatches == nPatchDel[p] & Biomass_Time_noreps$Scale=="Regional"][predel_collecttime]
+      
+          IndirectPropBiomass_Time_noreps$Biomass[IndirectPropBiomass_Time_noreps$Rep==r & IndirectPropBiomass_Time_noreps$Dispersal==disp & IndirectPropBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectPropBiomass_Time_noreps$Species == nSpecies & IndirectPropBiomass_Time_noreps$DelPatches == PatchDel & IndirectPropBiomass_Time_noreps$Scale=="Regional"] <- (IndirectBiomass_Time_noreps$Biomass[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"]/mean(IndirectBiomass_Time_noreps$Biomass[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"][1:predel_collecttime]))*100
       
           IndirectPropBiomass_Time_noreps$IndivBiomass[IndirectPropBiomass_Time_noreps$Rep==r & IndirectPropBiomass_Time_noreps$Dispersal==disp & IndirectPropBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectPropBiomass_Time_noreps$Species == nSpecies & IndirectPropBiomass_Time_noreps$DelPatches == PatchDel & IndirectPropBiomass_Time_noreps$Scale=="Regional"] <- (IndirectBiomass_Time_noreps$IndivBiomass[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"]/mean(IndirectBiomass_Time_noreps$IndivBiomass[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"][1:predel_collecttime],na.rm=T))*100 #might not need the na.rm=T
       
