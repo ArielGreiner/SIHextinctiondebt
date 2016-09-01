@@ -1294,6 +1294,127 @@ ggplot(IndirectPropBiomass_TimeSummd[IndirectPropBiomass_TimeSummd$Species == nS
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+ggplot(IndirectPropBiomass_TimeSummd[IndirectPropBiomass_TimeSummd$Species == nSpeciesMult[s] & IndirectPropBiomass_TimeSummd$DelPatches == nPatchDel[p] & IndirectPropBiomass_TimeSummd$Scale == "Local",],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal)))+
+  #geom_point()+ 
+  geom_line(aes(y = Mean_Biomass, colour = "Biomass")) + geom_line(aes(y = Mean_IndivBiomass, colour = "Indiv Biomass")) + geom_line(aes(y = Mean_SR, colour = "Species Richness")) + geom_line(aes(y = Mean_CVTime, colour = "CV Biomass"))  +
+  #divide biomass and indivbiomass by 100 if 'regional'
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, fill = "red", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_IndivBiomass,ymax=Upper_IndivBiomass),width=0.1, fill = "cyan", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "green", alpha = 0.4, color = NA)+ #read Upper_CVTime/10 until 6.23.2016
+  xlab("Time Step")+
+  ylab("% (Indirect Effects)")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted, Local scale"))+
+  geom_vline(x=predel_collecttime)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free_y")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+#transforming the percentage proportion metric into a log response ratio metric 
+IndirectLRRBiomass_Time <- IndirectPropBiomass_Time
+IndirectLRRBiomass_Time$SR <- log((IndirectPropBiomass_Time$SR)/100)
+IndirectLRRBiomass_Time$Biomass <- log((IndirectPropBiomass_Time$Biomass)/100)
+IndirectLRRBiomass_Time$IndivBiomass <- log((IndirectPropBiomass_Time$IndivBiomass)/100)
+IndirectLRRBiomass_Time$CVTime <- log((IndirectPropBiomass_Time$CVTime)/100)
+
+IndirectLRRBiomass_TimeSummd <- summarise(group_by(IndirectLRRBiomass_Time,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep), Mean_SR = mean(SR, na.rm=T), Upper_SR = quantile(SR, probs=.975, na.rm = T, names = F),Lower_SR = quantile(SR, probs=.025, na.rm = T, names = F), Mean_Biomass = mean(Biomass, na.rm=T), Upper_Biomass = quantile(Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Biomass, probs=.025, na.rm = T, names = F), Mean_IndivBiomass = mean(IndivBiomass, na.rm=T), Upper_IndivBiomass = quantile(IndivBiomass, probs=.975, na.rm = T, names = F),Lower_IndivBiomass = quantile(IndivBiomass, probs=.025, na.rm = T, names = F), Mean_CVTime = mean(CVTime, na.rm=T), Upper_CVTime = quantile(CVTime, probs=.975, na.rm = T, names = F),Lower_CVTime = quantile(CVTime, probs=.025, na.rm = T, names = F))
+
+ggplot(IndirectLRRBiomass_TimeSummd[IndirectLRRBiomass_TimeSummd$Species == nSpeciesMult[s] & IndirectLRRBiomass_TimeSummd$DelPatches == nPatchDel[p],],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal, Scale)))+
+  #geom_point()+ 
+  geom_line(aes(y = Mean_Biomass, colour = "Biomass", linetype = Scale)) + geom_line(aes(y = Mean_IndivBiomass, colour = "Indiv Biomass", linetype = Scale)) + geom_line(aes(y = Mean_SR, colour = "Species Richness", linetype = Scale)) + geom_line(aes(y = Mean_CVTime, colour = "CV Biomass", linetype = Scale))  +
+  #geom_line(aes(y = Mean_Biomass, colour = "Biomass", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_IndivBiomass, colour = "Indiv Biomass", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_SR, colour = "Species Richness", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_CVTime, colour = "CV Biomass", linetype = Scale, alpha = Scale))  +
+  #divide biomass and indivbiomass by 100 if 'regional'
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, fill = "red", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_IndivBiomass,ymax=Upper_IndivBiomass),width=0.1, fill = "cyan", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "green", alpha = 0.4, color = NA)+ #read Upper_CVTime/10 until 6.23.2016
+  xlab("Time Step")+
+  ylab("LRR (Indirect Effects)")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=predel_collecttime)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free_y")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+IndirectLRRBiomass_Time2 <- IndirectLRRBiomass_Time
+IndirectLRRBiomass_Time2$VarIndivBiomass <- NULL
+IndirectLRRBiomass_TimeLong <- gather(IndirectLRRBiomass_Time2, value = Value, key = LRRMetric, Biomass:SR)
+
+IndirectLRRBiomassLong_Summd <- summarise(group_by(IndirectLRRBiomass_TimeLong,Dispersal,Patch_remove,Scale, Species, DelPatches, TimeStep, LRRMetric), Mean_Value = mean(Value, na.rm=T), Upper_Value = quantile(Value, probs=.975, na.rm = T, names = F),Lower_Value = quantile(Value, probs=.025, na.rm = T, names = F))
+
+ggplot(IndirectLRRBiomassLong_Summd[IndirectLRRBiomassLong_Summd$Species == nSpeciesMult[s] & IndirectLRRBiomassLong_Summd$DelPatches == nPatchDel[p],],aes(x=TimeStep,group=interaction(Patch_remove, Dispersal, Scale, LRRMetric), color = Patch_remove))+
+  #geom_point()+ 
+  #geom_line(aes(y = Mean_Value, linetype = Scale, alpha = factor(Scale))) +
+  geom_line(aes(y = Mean_Value, linetype = Scale)) +
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_Value,ymax=Upper_Value),width=0.1, alpha = 0.4, color = NA)+
+  xlab("Time Step")+
+  ylab("LRR (Indirect Effects)")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=predel_collecttime)+
+  #facet_grid(Dispersal~Patch_remove)+
+  facet_grid(Dispersal~LRRMetric)+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+IndirectLRRBiomassLong_Bin <- IndirectLRRBiomass_TimeLong %>%
+  group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep, LRRMetric) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep, LRRMetric)%>%
+  summarize(Mean_Value = mean(Value, na.rm = T)) %>%
+  group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, LRRMetric, TimeStepRound) %>%
+  summarize(Mean_Value_Final = mean(Mean_Value, na.rm=T), Upper_Value = quantile(Mean_Value, probs=.975, na.rm = T, names = F),Lower_Value = quantile(Mean_Value, probs=.025, na.rm = T, names = F))
+
+ggplot(IndirectLRRBiomassLong_Bin[IndirectLRRBiomassLong_Bin$Species == nSpeciesMult[s] & IndirectLRRBiomassLong_Bin$DelPatches == nPatchDel[p],],aes(x=TimeStepRound,group=interaction(Patch_remove, Dispersal, Scale, LRRMetric), color = Patch_remove))+
+  #geom_point()+ 
+  #geom_line(aes(y = Mean_Value, linetype = Scale, alpha = factor(Scale))) +
+  geom_line(aes(y = Mean_Value_Final, linetype = Scale)) +
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_Value,ymax=Upper_Value),width=0.1, alpha = 0.4, color = NA)+
+  xlab("Time Step")+
+  ylab("LRR (Indirect Effects)")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=predel_collecttime/20)+
+  #facet_grid(Dispersal~Patch_remove)+
+  facet_grid(Dispersal~LRRMetric)+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+IndirectLRRBiomassTime_Bin <- IndirectLRRBiomass_Time %>%
+  group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
+  mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
+  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep)%>%
+  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_IndivBiomass = mean(IndivBiomass, na.rm = T), Mean_SR = mean(SR, na.rm = T), Mean_CVTime = mean(CVTime, na.rm = T)) %>%
+  group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, TimeStepRound) %>%
+  summarize(Mean_SR_Final = mean(Mean_SR, na.rm=T), Upper_SR = quantile(Mean_SR, probs=.975, na.rm = T, names = F),Lower_SR = quantile(Mean_SR, probs=.025, na.rm = T, names = F), Mean_Biomass_Final = mean(Mean_Biomass, na.rm=T), Upper_Biomass = quantile(Mean_Biomass, probs=.975, na.rm = T, names = F),Lower_Biomass = quantile(Mean_Biomass, probs=.025, na.rm = T, names = F), Mean_IndivBiomass_Final = mean(Mean_IndivBiomass, na.rm=T), Upper_IndivBiomass = quantile(Mean_IndivBiomass, probs=.975, na.rm = T, names = F),Lower_IndivBiomass = quantile(Mean_IndivBiomass, probs=.025, na.rm = T, names = F), Mean_CVTime_Final = mean(Mean_CVTime, na.rm=T), Upper_CVTime = quantile(Mean_CVTime, probs=.975, na.rm = T, names = F),Lower_CVTime = quantile(Mean_CVTime, probs=.025, na.rm = T, names = F))
+
+#CV, Biomass, Indiv Biomass, SR on one graph 
+ggplot(IndirectLRRBiomassTime_Bin[IndirectLRRBiomassTime_Bin$Species == nSpeciesMult[s] & IndirectLRRBiomassTime_Bin$DelPatches == nPatchDel[p],],aes(x=TimeStepRound,group=interaction(Patch_remove, Dispersal, Scale)))+
+  #geom_point()+ 
+  geom_line(aes(y = Mean_Biomass_Final, colour = "Biomass", linetype = Scale)) + geom_line(aes(y = Mean_IndivBiomass_Final, colour = "Indiv Biomass", linetype = Scale)) + geom_line(aes(y = Mean_SR_Final, colour = "Species Richness", linetype = Scale)) + geom_line(aes(y = Mean_CVTime_Final, colour = "CV Biomass", linetype = Scale))  +
+  #geom_line(aes(y = Mean_Biomass_Final, colour = "Biomass", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_IndivBiomass_Final, colour = "Indiv Biomass", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_SR_Final, colour = "Species Richness", linetype = Scale, alpha = Scale)) + geom_line(aes(y = Mean_CVTime_Final, colour = "CV Biomass", linetype = Scale, alpha = Scale))  +
+  scale_x_log10()+
+  geom_ribbon(aes(ymin=Lower_SR,ymax=Upper_SR),width=0.1, fill = "purple", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_Biomass,ymax=Upper_Biomass),width=0.1, fill = "red", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_IndivBiomass,ymax=Upper_IndivBiomass),width=0.1, fill = "cyan", alpha = 0.4, color = NA)+
+  geom_ribbon(aes(ymin=Lower_CVTime,ymax=Upper_CVTime),width=0.1, fill = "green", alpha = 0.4, color = NA)+ #read Upper_CVTime/10 until 6.23.2016
+  xlab("Time Step/20")+
+  ylab("LRR (Indirect Effects)")+
+  ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_vline(x=predel_collecttime/20)+
+  facet_grid(Dispersal~Patch_remove)+
+  #facet_grid(Dispersal~Patch_remove,scale="free_y")+
+  #facet_grid(Scale~Patch_remove,scale="free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
 IndirectBiomassTime_Bin <- IndirectBiomass_Time %>%
   group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
   mutate(TimeStepRound = ceiling(TimeStep/20)) %>%
@@ -1358,8 +1479,17 @@ ggplot(IndirectPropBiomassTime_Bin[IndirectPropBiomassTime_Bin$Species == nSpeci
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#adding in log response ratio versions, have to take absolute values...
+#IndirectED_data$LRRSRLoss <- log((abs(IndirectED_data$PercentLoss))/100)
+#IndirectED_data$LRRSRLoss2 <- log((abs(IndirectED_data$PercentLoss2))/100)
+#IndirectED_data$LRRBmassChange <- log((abs(IndirectED_data$PercentBmassChange))/100)
+#IndirectED_data$LRRCVChange <- log((abs(IndirectED_data$PercentCVChange))/100)
+IndirectED_data$LRRSRLoss <- log(abs(IndirectED_data$PercentLoss))
+IndirectED_data$LRRSRLoss2 <- log(abs(IndirectED_data$PercentLoss2))
+IndirectED_data$LRRBmassChange <- log(abs(IndirectED_data$PercentBmassChange))
+IndirectED_data$LRRCVChange <- log(abs(IndirectED_data$PercentCVChange))
 
-IndirectEDdata_avgchange <- summarise(group_by(IndirectED_data,Dispersal,Patch_remove,Scale, Species, DelPatches), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F), Mean_SRLoss2 = mean(SRLoss2, na.rm=T), Lowest_SRLoss2=quantile(SRLoss2, probs = 0.025, na.rm=T, names = F), Highest_SRLoss2=quantile(SRLoss2, probs = 0.975, na.rm=T, names = F), Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), Lowest_PercentLoss=quantile(PercentLoss, probs = 0.025, na.rm=T, names = F), Highest_PercentLoss=quantile(PercentLoss, probs = 0.975, na.rm=T, names = F), Mean_BiomassChange = mean(BiomassChange, na.rm=T), SD_BiomassChange = sd(BiomassChange, na.rm = T), Lowest_BiomassChange=quantile(BiomassChange, probs = 0.025, na.rm=T, names = F), Highest_BiomassChange=quantile(BiomassChange, probs = 0.975, na.rm=T, names = F), Mean_PercentBmassChange = mean(PercentBmassChange, na.rm=T), SD_PercentBmassChange = sd(PercentBmassChange, na.rm = T), Lowest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.025, na.rm=T, names = F), Highest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.975, na.rm=T, names = F), Mean_CVChange = mean(CVChange, na.rm=T), SD_CVChange = sd(CVChange, na.rm = T), Lowest_CVChange=quantile(CVChange, probs = 0.025, na.rm=T, names = F), Highest_CVChange=quantile(CVChange, probs = 0.975, na.rm=T, names = F), Mean_PercentCVChange = mean(PercentCVChange, na.rm=T), SD_PercentCVChange = sd(PercentCVChange, na.rm = T), Lowest_PercentCVChange=quantile(PercentCVChange, probs = 0.025, na.rm=T, names = F), Highest_PercentCVChange=quantile(PercentCVChange, probs = 0.975, na.rm=T, names = F))
+IndirectEDdata_avgchange <- summarise(group_by(IndirectED_data,Dispersal,Patch_remove,Scale, Species, DelPatches), Mean_SRLoss = mean(SRLoss, na.rm=T), SD_SRLoss = sd(SRLoss, na.rm = T), Lowest_SRLoss=quantile(SRLoss, probs = 0.025, na.rm=T, names = F), Highest_SRLoss=quantile(SRLoss, probs = 0.975, na.rm=T, names = F), Mean_SRLoss2 = mean(SRLoss2, na.rm=T), Lowest_SRLoss2=quantile(SRLoss2, probs = 0.025, na.rm=T, names = F), Highest_SRLoss2=quantile(SRLoss2, probs = 0.975, na.rm=T, names = F), Mean_PercentLoss = mean(PercentLoss, na.rm=T), SD_PercentLoss = sd(PercentLoss, na.rm = T), Lowest_PercentLoss=quantile(PercentLoss, probs = 0.025, na.rm=T, names = F), Highest_PercentLoss=quantile(PercentLoss, probs = 0.975, na.rm=T, names = F), Mean_PercentLoss2 = mean(PercentLoss2, na.rm=T), SD_PercentLoss2 = sd(PercentLoss2, na.rm = T), Lowest_PercentLoss2=quantile(PercentLoss2, probs = 0.025, na.rm=T, names = F), Highest_PercentLoss2=quantile(PercentLoss2, probs = 0.975, na.rm=T, names = F), Mean_LRRSRLoss = mean(LRRSRLoss, na.rm=T), SD_LRRSRLoss = sd(LRRSRLoss, na.rm = T), Lowest_LRRSRLoss=quantile(LRRSRLoss, probs = 0.025, na.rm=T, names = F), Highest_LRRSRLoss=quantile(LRRSRLoss, probs = 0.975, na.rm=T, names = F), Mean_LRRSRLoss2 = mean(LRRSRLoss2, na.rm=T), SD_LRRSRLoss2 = sd(LRRSRLoss2, na.rm = T), Lowest_LRRSRLoss2=quantile(LRRSRLoss2, probs = 0.025, na.rm=T, names = F), Highest_LRRSRLoss2=quantile(LRRSRLoss2, probs = 0.975, na.rm=T, names = F), Mean_BiomassChange = mean(BiomassChange, na.rm=T), SD_BiomassChange = sd(BiomassChange, na.rm = T), Lowest_BiomassChange=quantile(BiomassChange, probs = 0.025, na.rm=T, names = F), Highest_BiomassChange=quantile(BiomassChange, probs = 0.975, na.rm=T, names = F), Mean_PercentBmassChange = mean(PercentBmassChange, na.rm=T), SD_PercentBmassChange = sd(PercentBmassChange, na.rm = T), Lowest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.025, na.rm=T, names = F), Highest_PercentBmassChange=quantile(PercentBmassChange, probs = 0.975, na.rm=T, names = F), Mean_LRRBmassChange = mean(LRRBmassChange, na.rm=T), SD_LRRBmassChange = sd(LRRBmassChange, na.rm = T), Lowest_LRRBmassChange=quantile(LRRBmassChange, probs = 0.025, na.rm=T, names = F), Highest_LRRBmassChange=quantile(LRRBmassChange, probs = 0.975, na.rm=T, names = F), Mean_CVChange = mean(CVChange, na.rm=T), SD_CVChange = sd(CVChange, na.rm = T), Lowest_CVChange=quantile(CVChange, probs = 0.025, na.rm=T, names = F), Highest_CVChange=quantile(CVChange, probs = 0.975, na.rm=T, names = F), Mean_PercentCVChange = mean(PercentCVChange, na.rm=T), SD_PercentCVChange = sd(PercentCVChange, na.rm = T), Lowest_PercentCVChange=quantile(PercentCVChange, probs = 0.025, na.rm=T, names = F), Highest_PercentCVChange=quantile(PercentCVChange, probs = 0.975, na.rm=T, names = F), Mean_LRRCVChange = mean(LRRCVChange, na.rm=T), SD_LRRCVChange = sd(LRRCVChange, na.rm = T), Lowest_LRRCVChange=quantile(LRRCVChange, probs = 0.025, na.rm=T, names = F), Highest_LRRCVChange=quantile(LRRCVChange, probs = 0.975, na.rm=T, names = F))
 
 #change in _____ vs # of patches deleted (only indirect effect)
 #need to get the error bars to work...
@@ -1393,6 +1523,47 @@ ggplot(IndirectEDdata_avgchange[IndirectEDdata_avgchange$Species == nSpeciesMult
   xlab("Number of Patches Deleted")+
   ylab("%")+
   scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  #geom_errorbar(aes(ymin=Lowest_CVChange, ymax=Highest_CVChange),width=0.1, linetype = 2)+
+  #geom_errorbar(aes(ymin=Lowest_BiomassChange, ymax=Highest_BiomassChange),width=0.1, linetype = 2)+
+  #geom_errorbar(aes(ymin=Lowest_SRLoss, ymax=Highest_SRLoss),width=0.1, linetype = 2)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#% change in _____ vs # of patches deleted (only indirect effect)
+ggplot(IndirectEDdata_avgchange[IndirectEDdata_avgchange$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),shape = factor(Patch_remove), size = 2))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_PercentCVChange, color = "CV Change"))+
+  #geom_point(aes(size = 4))+
+  geom_point(aes(y = Mean_PercentBmassChange, color = "Biomass Change"))+
+  geom_point(aes(y = Mean_PercentLoss, color = "SR Loss"))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("%")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  #geom_errorbar(aes(ymin=Lowest_CVChange, ymax=Highest_CVChange),width=0.1, linetype = 2)+
+  #geom_errorbar(aes(ymin=Lowest_BiomassChange, ymax=Highest_BiomassChange),width=0.1, linetype = 2)+
+  #geom_errorbar(aes(ymin=Lowest_SRLoss, ymax=Highest_SRLoss),width=0.1, linetype = 2)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#Doesn't really work...getting a bunch of -Inf's...<- stopped dividing by 100 to account for the percent thing, got a bit better, but still leaving a very unclear story
+#LRR change in _____ vs # of patches deleted (only indirect effect)
+ggplot(IndirectEDdata_avgchange[IndirectEDdata_avgchange$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),shape = factor(Patch_remove), size = 2))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRCVChange, color = "CV Change"))+
+  #geom_point(aes(size = 4))+
+  geom_point(aes(y = Mean_LRRBmassChange, color = "Biomass Change"))+
+  geom_point(aes(y = Mean_LRRSRLoss, color = "SR Loss"))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR")+
+  #scale_y_log10()+
   #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
   #geom_errorbar(aes(ymin=Lowest_CVChange, ymax=Highest_CVChange),width=0.1, linetype = 2)+
   #geom_errorbar(aes(ymin=Lowest_BiomassChange, ymax=Highest_BiomassChange),width=0.1, linetype = 2)+
