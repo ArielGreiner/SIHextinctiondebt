@@ -1686,3 +1686,124 @@ ggplot(IndirectEDdata_avgall[IndirectEDdata_avgall$Species == nSpeciesMult[s],],
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#Converting the IndirectED_data dataframe to long format and then making the vs # of patches deleted graphs
+
+
+#names(IndirectED_data)
+# [1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
+# [7] "SRLoss"             "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime"          "SRLagTime2"        
+#[13] "BmassLagTime"       "CVLagTime"          "PercentLoss"        "PercentLoss2"       "PercentBmassChange" "PercentCVChange"   
+#[19] "LRRSRLoss"          "LRRSRLoss2"         "LRRBmassChange"     "LRRCVChange"      
+
+IndirectED_data_cons <- IndirectED_data
+IndirectED_data_cons$SRLoss <- NULL
+IndirectED_data_cons$SRLagTime <- NULL
+IndirectED_data_cons$PercentLoss <- NULL
+#the LRR metrics weren't really working
+IndirectED_data_cons$LRRSRLoss <- NULL 
+IndirectED_data_cons$LRRSRLoss2 <- NULL
+IndirectED_data_cons$LRRBmassChange <- NULL
+IndirectED_data_cons$LRRCVChange <- NULL
+#names(IndirectED_data_cons)
+# [1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
+# [7] "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime2"         "BmassLagTime"       "CVLagTime"         
+#[13] "PercentLoss2"       "PercentBmassChange" "PercentCVChange" 
+
+IndirectED_data_changeonly <- IndirectED_data_cons
+IndirectED_data_changeonly$SRLagTime2 <- NULL
+IndirectED_data_changeonly$BmassLagTime <- NULL
+IndirectED_data_changeonly$CVLagTime <- NULL
+IndirectED_data_changeonly$PercentLoss2 <- NULL
+IndirectED_data_changeonly$PercentBmassChange <- NULL
+IndirectED_data_changeonly$PercentCVChange <- NULL
+#need to rename the columns that are staying in
+IndirectED_data_changeonly$SR <- IndirectED_data_changeonly$SRLoss2
+IndirectED_data_changeonly$Biomass <- IndirectED_data_changeonly$BiomassChange
+IndirectED_data_changeonly$CV <- IndirectED_data_changeonly$CVChange
+IndirectED_data_changeonly$SRLoss2 <- NULL
+IndirectED_data_changeonly$BiomassChange <- NULL
+IndirectED_data_changeonly$CVChange <- NULL
+#names(IndirectED_data_changeonly)
+#[1] "Rep"          "Dispersal"    "Patch_remove" "Species"      "DelPatches"   "Scale"        "SR"           "Biomass"      "CV"          
+
+IndirectED_data_changeonly_Long <- gather(IndirectED_data_changeonly, value = Change, key = Category, SR:CV) 
+
+IndirectED_data_pchangeonly <- IndirectED_data_cons
+IndirectED_data_pchangeonly$SRLoss2 <- NULL
+IndirectED_data_pchangeonly$BiomassChange <- NULL
+IndirectED_data_pchangeonly$CVChange <- NULL
+IndirectED_data_pchangeonly$SRLagTime2 <- NULL
+IndirectED_data_pchangeonly$BmassLagTime <- NULL
+IndirectED_data_pchangeonly$CVLagTime <- NULL
+#need to rename the columns that are staying in
+IndirectED_data_pchangeonly$SR <- IndirectED_data_pchangeonly$PercentLoss2
+IndirectED_data_pchangeonly$Biomass <- IndirectED_data_pchangeonly$PercentBmassChange
+IndirectED_data_pchangeonly$CV <- IndirectED_data_pchangeonly$PercentCVChange
+IndirectED_data_pchangeonly$PercentLoss2 <- NULL
+IndirectED_data_pchangeonly$PercentBmassChange <- NULL
+IndirectED_data_pchangeonly$PercentCVChange <- NULL
+#names(IndirectED_data_pchangeonly)
+#[1] "Rep"          "Dispersal"    "Patch_remove" "Species"      "DelPatches"   "Scale"        "SR"           "Biomass"      "CV"          
+
+IndirectED_data_pchangeonly_Long <- gather(IndirectED_data_pchangeonly, value = PercentChange, key = Category, SR:CV) 
+
+IndirectED_data_timeonly <- IndirectED_data_cons
+IndirectED_data_timeonly$SRLoss2 <- NULL
+IndirectED_data_timeonly$BiomassChange <- NULL
+IndirectED_data_timeonly$CVChange <- NULL
+IndirectED_data_timeonly$PercentLoss2 <- NULL
+IndirectED_data_timeonly$PercentBmassChange <- NULL
+IndirectED_data_timeonly$PercentCVChange <- NULL
+#need to rename the columns that are staying in
+IndirectED_data_timeonly$SR <- IndirectED_data_timeonly$SRLagTime2
+IndirectED_data_timeonly$Biomass <- IndirectED_data_timeonly$BmassLagTime
+IndirectED_data_timeonly$CV <- IndirectED_data_timeonly$CVLagTime
+IndirectED_data_timeonly$SRLagTime2 <- NULL
+IndirectED_data_timeonly$BmassLagTime <- NULL
+IndirectED_data_timeonly$CVLagTime <- NULL
+#names(IndirectED_data_timeonly)
+#[1] "Rep"          "Dispersal"    "Patch_remove" "Species"      "DelPatches"   "Scale"        "SR"           "Biomass"      "CV"          
+
+IndirectED_data_timeonly_Long <- gather(IndirectED_data_timeonly, value = LagTime, key = Category, SR:CV)
+
+#Now putting them all together
+IndirectED_data_Long <- IndirectED_data_timeonly_Long
+IndirectED_data_Long$PercentChange <- IndirectED_data_pchangeonly_Long$PercentChange
+IndirectED_data_Long$Change <- IndirectED_data_changeonly_Long$Change
+#names(IndirectED_data_Long)
+# [1] "Rep"           "Dispersal"     "Patch_remove"  "Species"       "DelPatches"    "Scale"         "Category"      "LagTime"      
+# [9] "PercentChange" "Change" 
+
+IndirectED_data_Long_avg <- summarise(group_by(IndirectED_data_Long,Dispersal,Patch_remove,Scale, Species, DelPatches, Category), Mean_Change = mean(Change, na.rm=T), SD_Change = sd(Change, na.rm = T), Lowest_Change=quantile(Change, probs = 0.025, na.rm=T, names = F), Highest_Change=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_PercentChange = mean(PercentChange, na.rm=T), SD_PercentChange = sd(PercentChange, na.rm = T), Lowest_PercentChange=quantile(PercentChange, probs = 0.025, na.rm=T, names = F), Highest_PercentChange=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F))
+
+#change in _____ vs # of patches deleted (only indirect effect)
+#need to get the error bars to work...
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_Change, size = 2))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_Change, ymax=Highest_Change),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#percent change in _____ vs # of patches deleted (only indirect effect)
+#need to get the error bars to work...
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_PercentChange, size = 2))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_PercentChange, ymax=Highest_PercentChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
