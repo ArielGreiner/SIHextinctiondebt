@@ -105,8 +105,8 @@ SIH_frag<- function(){
   
   for(s in 1:length(nSpeciesMult)){
     for(p in 1:length(nPatchDel)){
+#new, replaced code:
       success <- F
-      #new, replaced code:
       while(!success){
         landscape<-round(data.frame(x = runif(numCom, min = 1, max = 1000), y = runif(numCom, min = 1, max = 1000)))
         distance_mat1<-as.matrix(dist(landscape,method = "euclidean",diag = T,upper=T))
