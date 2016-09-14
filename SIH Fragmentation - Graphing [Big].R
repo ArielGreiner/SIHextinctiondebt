@@ -1716,6 +1716,9 @@ IndirectED_data_changeonly$CVLagTime <- NULL
 IndirectED_data_changeonly$PercentLoss2 <- NULL
 IndirectED_data_changeonly$PercentBmassChange <- NULL
 IndirectED_data_changeonly$PercentCVChange <- NULL
+IndirectED_data_changeonly$LRRBiomassChange <- NULL
+IndirectED_data_changeonly$LRRSRChange <- NULL
+IndirectED_data_changeonly$LRRCVChange <- NULL
 #need to rename the columns that are staying in
 IndirectED_data_changeonly$SR <- IndirectED_data_changeonly$SRLoss2
 IndirectED_data_changeonly$Biomass <- IndirectED_data_changeonly$BiomassChange
@@ -1735,6 +1738,9 @@ IndirectED_data_pchangeonly$CVChange <- NULL
 IndirectED_data_pchangeonly$SRLagTime2 <- NULL
 IndirectED_data_pchangeonly$BmassLagTime <- NULL
 IndirectED_data_pchangeonly$CVLagTime <- NULL
+IndirectED_data_pchangeonly$LRRBiomassChange <- NULL
+IndirectED_data_pchangeonly$LRRSRChange <- NULL
+IndirectED_data_pchangeonly$LRRCVChange <- NULL
 #need to rename the columns that are staying in
 IndirectED_data_pchangeonly$SR <- IndirectED_data_pchangeonly$PercentLoss2
 IndirectED_data_pchangeonly$Biomass <- IndirectED_data_pchangeonly$PercentBmassChange
@@ -1754,6 +1760,9 @@ IndirectED_data_timeonly$CVChange <- NULL
 IndirectED_data_timeonly$PercentLoss2 <- NULL
 IndirectED_data_timeonly$PercentBmassChange <- NULL
 IndirectED_data_timeonly$PercentCVChange <- NULL
+IndirectED_data_timeonly$LRRBiomassChange <- NULL
+IndirectED_data_timeonly$LRRSRChange <- NULL
+IndirectED_data_timeonly$LRRCVChange <- NULL
 #need to rename the columns that are staying in
 IndirectED_data_timeonly$SR <- IndirectED_data_timeonly$SRLagTime2
 IndirectED_data_timeonly$Biomass <- IndirectED_data_timeonly$BmassLagTime
@@ -1766,15 +1775,33 @@ IndirectED_data_timeonly$CVLagTime <- NULL
 
 IndirectED_data_timeonly_Long <- gather(IndirectED_data_timeonly, value = LagTime, key = Category, SR:CV)
 
+IndirectED_data_LRRonly <- IndirectED_data_cons
+IndirectED_data_LRRonly$SRLoss2 <- NULL
+IndirectED_data_LRRonly$BiomassChange <- NULL
+IndirectED_data_LRRonly$CVChange <- NULL
+IndirectED_data_LRRonly$PercentLoss2 <- NULL
+IndirectED_data_LRRonly$PercentBmassChange <- NULL
+IndirectED_data_LRRonly$PercentCVChange <- NULL
+IndirectED_data_LRRonly$SRLagTime2 <- NULL
+IndirectED_data_LRRonly$BmassLagTime <- NULL
+IndirectED_data_LRRonly$CVLagTime <- NULL
+#need to rename the columns that are staying in
+IndirectED_data_LRRonly$SR <- IndirectED_data_LRRonly$LRRSRChange
+IndirectED_data_LRRonly$Biomass <- IndirectED_data_LRRonly$LRRBiomassChange
+IndirectED_data_LRRonly$CV <- IndirectED_data_LRRonly$LRRCVChange
+IndirectED_data_LRRonly$LRRBiomassChange <- NULL
+IndirectED_data_LRRonly$LRRSRChange <- NULL
+IndirectED_data_LRRonly$LRRCVChange <- NULL
+
+IndirectED_data_LRRonly_Long <- gather(IndirectED_data_timeonly, value = LRRChange, key = Category, SR:CV)
+
 #Now putting them all together
 IndirectED_data_Long <- IndirectED_data_timeonly_Long
 IndirectED_data_Long$PercentChange <- IndirectED_data_pchangeonly_Long$PercentChange
 IndirectED_data_Long$Change <- IndirectED_data_changeonly_Long$Change
-#names(IndirectED_data_Long)
-# [1] "Rep"           "Dispersal"     "Patch_remove"  "Species"       "DelPatches"    "Scale"         "Category"      "LagTime"      
-# [9] "PercentChange" "Change" 
+IndirectED_data_Long$LRRChange <- IndirectED_data_LRRonly_Long$LRRChange
 
-IndirectED_data_Long_avg <- summarise(group_by(IndirectED_data_Long,Dispersal,Patch_remove,Scale, Species, DelPatches, Category), Mean_Change = mean(Change, na.rm=T), SD_Change = sd(Change, na.rm = T), Lowest_Change=quantile(Change, probs = 0.025, na.rm=T, names = F), Highest_Change=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_PercentChange = mean(PercentChange, na.rm=T), SD_PercentChange = sd(PercentChange, na.rm = T), Lowest_PercentChange=quantile(PercentChange, probs = 0.025, na.rm=T, names = F), Highest_PercentChange=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F))
+IndirectED_data_Long_avg <- summarise(group_by(IndirectED_data_Long,Dispersal,Patch_remove,Scale, Species, DelPatches, Category), Mean_Change = mean(Change, na.rm=T), SD_Change = sd(Change, na.rm = T), Lowest_Change=quantile(Change, probs = 0.025, na.rm=T, names = F), Highest_Change=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_PercentChange = mean(PercentChange, na.rm=T), SD_PercentChange = sd(PercentChange, na.rm = T), Lowest_PercentChange=quantile(PercentChange, probs = 0.025, na.rm=T, names = F), Highest_PercentChange=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_LRRChange = mean(LRRChange, na.rm=T), SD_LRRChange = sd(LRRChange, na.rm = T), Lowest_LRRChange=quantile(LRRChange, probs = 0.025, na.rm=T, names = F), Highest_LRRChange=quantile(LRRChange, probs = 0.975, na.rm=T, names = F), Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F))
 
 #change in _____ vs # of patches deleted (only indirect effect)
 #need to get the error bars to work...
@@ -1792,6 +1819,247 @@ ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
 
+#LRRchange in _____ vs # of patches deleted (only indirect effect)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRchange in all variables, points + lines
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+
+#LRRChange in 1 variable, line + points <- not the best
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "SR",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),shape = factor(Patch_remove), color = "red"))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (SR)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (line)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),color = factor(Patch_remove)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (Biomass)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (ribbon)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "CV",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),color = factor(Patch_remove), fill = factor(Patch_remove), alpha = 0.01))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (CV)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_ribbon(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1, color = NA)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#time, points + lines, vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LagTime, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Dispersal Level")+
+  ylab("Lag Time")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (line), vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove),color = factor(Patch_remove)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LagTime))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Lag Time (Biomass)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (ribbon), vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "CV",],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove),color = factor(Patch_remove), fill= factor(Patch_remove), alpha = 0.01))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LagTime))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Dispersal Level")+
+  ylab("Lag Time (CV)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_ribbon(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1, color = NA)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRchange in _____ vs # of patches deleted (only indirect effect)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRchange in all variables, points + lines
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+
+#LRRChange in 1 variable (line)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),color = factor(Patch_remove)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (Biomass)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (ribbon)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "CV",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal),color = factor(Patch_remove), fill = factor(Patch_remove), alpha = 0.01))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (CV)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_ribbon(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1, color = NA)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Dispersal~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRR change, points + lines, vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove, Category),shape = factor(Patch_remove), color = Category))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Dispersal Level")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (line), vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove),color = factor(Patch_remove)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (Biomass)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRRChange in 1 variable (ribbon), vs dispersal level
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "CV",],aes(x=factor(Dispersal),group=interaction(Scale, Patch_remove),color = factor(Patch_remove), fill= factor(Patch_remove), alpha = 0.01))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  #scale_shape_manual(values=c(15,19, 17))+
+  xlab("Dispersal Level")+
+  ylab("LRR Indirect Effect (CV)")+
+  #scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_ribbon(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1, color = NA)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(DelPatches~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+#######
+
 #percent change in _____ vs # of patches deleted (only indirect effect)
 #need to get the error bars to work...
 ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Patch_remove), color = Category))+
@@ -1799,7 +2067,7 @@ ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult
   geom_point(aes(y = Mean_PercentChange, size = 2))+
   scale_shape_manual(values=c(15,19, 17))+
   xlab("Number of Patches Deleted")+
-  ylab("Indirect Effect")+
+  ylab("% Indirect Effect")+
   scale_y_log10()+
   #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
   geom_errorbar(aes(ymin=Lowest_PercentChange, ymax=Highest_PercentChange),width=0.1)+
@@ -1807,3 +2075,86 @@ ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult
   facet_grid(Dispersal~Scale)+
   theme_bw(base_size = 18)+ #gets rid of grey background
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRR Change: lines + points, rows = b/w-ness levels, colours = dispersal levels, columns = spatial scales (all categories)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Category), color = factor(Dispersal)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Patch_remove~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#same as the above, but with just one category
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "CV",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category), color = factor(Dispersal)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LRRChange, size = 2))+
+  geom_line(aes(y = Mean_LRRChange))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("LRR Indirect Effect (CV)")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LRRChange, ymax=Highest_LRRChange),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Patch_remove~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#Lag Time: lines + points, rows = b/w-ness levels, colours = dispersal levels, columns = spatial scales (all categories)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s],],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal, Category),shape = factor(Category), color = factor(Dispersal)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  geom_point(aes(y = Mean_LagTime, size = 2))+
+  geom_line(aes(y = Mean_LagTime))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Lag Time")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Patch_remove~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#same as above, with just 1 category
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=factor(DelPatches),group=interaction(Scale, Patch_remove, Dispersal), color = factor(Dispersal)))+
+  #scale_color_brewer("Dispersal Level", palette = "Paired")+
+  #geom_point(aes(y = Mean_LagTime, size = 2))+
+  geom_line(aes(y = Mean_LagTime))+    
+  scale_shape_manual(values=c(15,19, 17))+
+  xlab("Number of Patches Deleted")+
+  ylab("Lag Time (Biomass)")+
+  scale_y_log10()+
+  #ggtitle(paste(nSpeciesMult[s], "Species Initially"))+ <- I think I'm sticking with 11 species for the time being
+  geom_errorbar(aes(ymin=Lowest_LagTime, ymax=Highest_LagTime),width=0.1)+
+  #facet_grid(Scale~.,scales = "free_y")+	
+  facet_grid(Patch_remove~Scale)+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
+#LRR change vs time plot (quintic style) (biomass)
+ggplot(IndirectED_data_Long_avg[IndirectED_data_Long_avg$Species == nSpeciesMult[s] & IndirectED_data_Long_avg$Category == "Biomass",],aes(x=Mean_LagTime,y=Mean_LRRChange,color=factor(Dispersal),group=interaction(Scale, Patch_remove, Dispersal, DelPatches)))+ 
+  scale_color_brewer("Dispersal Level", palette = "BrBG")+ #or "Paired"
+  geom_point(aes(shape = factor(Patch_remove)), size = 4)+
+  scale_x_log10()+
+  #scale_shape_manual(values=c(25,19, 17))+
+  scale_shape_manual(values=c(15,19, 17))+
+  #scale_alpha_discrete(range = c(0.4,1))+
+  xlab("Time Until Biomass Stabilizes")+
+  ylab("LRR(Biomass Lost due to Patch Deletion Effects)")+
+  #ggtitle(paste(nSpeciesMult[s], "Species and", nPatchDel[p], "patches deleted"))+
+  geom_errorbar(aes(ymin=Lowest_LRRChange,ymax=Highest_LRRChange),width=0.1, linetype = 2)+
+  geom_errorbarh(aes(xmin=Lowest_LagTime,xmax=Highest_LagTime),width=0.1, linetype = 2)+
+  facet_grid(Scale~DelPatches)+
+  #optional: facet_grid(Scale~DelPatches, scales = "free")+
+  theme_bw(base_size = 18)+ #gets rid of grey background
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) #removes grid lines
+
