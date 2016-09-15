@@ -1690,24 +1690,20 @@ ggplot(IndirectEDdata_avgall[IndirectEDdata_avgall$Species == nSpeciesMult[s],],
 
 
 #names(IndirectED_data)
-# [1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
-# [7] "SRLoss"             "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime"          "SRLagTime2"        
+#[1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
+#[7] "SRLoss"             "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime"          "SRLagTime2"        
 #[13] "BmassLagTime"       "CVLagTime"          "PercentLoss"        "PercentLoss2"       "PercentBmassChange" "PercentCVChange"   
-#[19] "LRRSRLoss"          "LRRSRLoss2"         "LRRBmassChange"     "LRRCVChange"      
+#[19] "LRRBiomassChange"   "LRRSRChange"        "LRRCVChange"       
 
 IndirectED_data_cons <- IndirectED_data
 IndirectED_data_cons$SRLoss <- NULL
 IndirectED_data_cons$SRLagTime <- NULL
 IndirectED_data_cons$PercentLoss <- NULL
-#the LRR metrics weren't really working
-IndirectED_data_cons$LRRSRLoss <- NULL 
-IndirectED_data_cons$LRRSRLoss2 <- NULL
-IndirectED_data_cons$LRRBmassChange <- NULL
-IndirectED_data_cons$LRRCVChange <- NULL
+
 #names(IndirectED_data_cons)
-# [1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
-# [7] "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime2"         "BmassLagTime"       "CVLagTime"         
-#[13] "PercentLoss2"       "PercentBmassChange" "PercentCVChange" 
+#[1] "Rep"                "Dispersal"          "Patch_remove"       "Species"            "DelPatches"         "Scale"             
+#[7] "SRLoss2"            "BiomassChange"      "CVChange"           "SRLagTime2"         "BmassLagTime"       "CVLagTime"         
+#[13] "PercentLoss2"       "PercentBmassChange" "PercentCVChange"    "LRRBiomassChange"   "LRRSRChange"        "LRRCVChange"       
 
 IndirectED_data_changeonly <- IndirectED_data_cons
 IndirectED_data_changeonly$SRLagTime2 <- NULL
@@ -1793,7 +1789,7 @@ IndirectED_data_LRRonly$LRRBiomassChange <- NULL
 IndirectED_data_LRRonly$LRRSRChange <- NULL
 IndirectED_data_LRRonly$LRRCVChange <- NULL
 
-IndirectED_data_LRRonly_Long <- gather(IndirectED_data_timeonly, value = LRRChange, key = Category, SR:CV)
+IndirectED_data_LRRonly_Long <- gather(IndirectED_data_LRRonly, value = LRRChange, key = Category, SR:CV)
 
 #Now putting them all together
 IndirectED_data_Long <- IndirectED_data_timeonly_Long
@@ -1801,7 +1797,7 @@ IndirectED_data_Long$PercentChange <- IndirectED_data_pchangeonly_Long$PercentCh
 IndirectED_data_Long$Change <- IndirectED_data_changeonly_Long$Change
 IndirectED_data_Long$LRRChange <- IndirectED_data_LRRonly_Long$LRRChange
 
-IndirectED_data_Long_avg <- summarise(group_by(IndirectED_data_Long,Dispersal,Patch_remove,Scale, Species, DelPatches, Category), Mean_Change = mean(Change, na.rm=T), SD_Change = sd(Change, na.rm = T), Lowest_Change=quantile(Change, probs = 0.025, na.rm=T, names = F), Highest_Change=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_PercentChange = mean(PercentChange, na.rm=T), SD_PercentChange = sd(PercentChange, na.rm = T), Lowest_PercentChange=quantile(PercentChange, probs = 0.025, na.rm=T, names = F), Highest_PercentChange=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_LRRChange = mean(LRRChange, na.rm=T), SD_LRRChange = sd(LRRChange, na.rm = T), Lowest_LRRChange=quantile(LRRChange, probs = 0.025, na.rm=T, names = F), Highest_LRRChange=quantile(LRRChange, probs = 0.975, na.rm=T, names = F), Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F))
+IndirectED_data_Long_avg <- summarise(group_by(IndirectED_data_Long,Dispersal,Patch_remove,Scale, Species, DelPatches, Category), Mean_Change = mean(Change, na.rm=T), SD_Change = sd(Change, na.rm = T), Lowest_Change=quantile(Change, probs = 0.025, na.rm=T, names = F), Highest_Change=quantile(Change, probs = 0.975, na.rm=T, names = F), Mean_PercentChange = mean(PercentChange, na.rm=T), SD_PercentChange = sd(PercentChange, na.rm = T), Lowest_PercentChange=quantile(PercentChange, probs = 0.025, na.rm=T, names = F), Highest_PercentChange=quantile(PercentChange, probs = 0.975, na.rm=T, names = F), Mean_LRRChange = mean(LRRChange, na.rm=T), SD_LRRChange = sd(LRRChange, na.rm = T), Lowest_LRRChange=quantile(LRRChange, probs = 0.025, na.rm=T, names = F), Highest_LRRChange=quantile(LRRChange, probs = 0.975, na.rm=T, names = F), Mean_LagTime = mean(LagTime, na.rm=T), SD_LagTime = sd(LagTime, na.rm = T), Lowest_LagTime=quantile(LagTime, probs = 0.025, na.rm=T, names = F), Highest_LagTime=quantile(LagTime, probs = 0.975, na.rm=T, names = F))
 
 #change in _____ vs # of patches deleted (only indirect effect)
 #need to get the error bars to work...
