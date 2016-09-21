@@ -446,9 +446,9 @@ for(i in 1:(length(nSpeciesMult)*length(nPatchDel)*length(removeV)*length(dispV)
      #version below only includes the patches that aren't deleted
      IndirectBiomass_Time_noreps$Biomass[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Local"] <- rowMeans(L_Bmass_sep[,-patch.delete], na.rm = T)
      
-    IndirectBiomass_Time_noreps$Resources[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Local"] <- rowMeans(Resources[,-patch.delete])
+     IndirectBiomass_Time_noreps$Resources[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Local"] <- rowMeans(Resources[,-patch.delete])
      
-     IndirectBiomass_Time_noreps$Resources[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"] <- rowSums(Resources[,-patch.delete])
+          IndirectBiomass_Time_noreps$Resources[IndirectBiomass_Time_noreps$Rep==r & IndirectBiomass_Time_noreps$Dispersal==disp & IndirectBiomass_Time_noreps$Patch_remove==removeV[j] & IndirectBiomass_Time_noreps$Species == nSpecies & IndirectBiomass_Time_noreps$DelPatches == PatchDel & IndirectBiomass_Time_noreps$Scale=="Regional"] <- rowSums(Resources[,-patch.delete])
      
       ED_data_noreps$BmassLossNoDel[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Regional"] <- sum(L_Bmass_sep[predel_collecttime,patch.delete])
       
@@ -710,12 +710,12 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
  
 ED_data_noreps$CVLagTime[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species==nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
-#summarizing indirectbiomass, indirectcvtime over time for BiomassChange and LagTime parameters      
+#summarizing indirect biomass dataframe for indirect change and time lag metrics
   IndirectBiomass_Time_Summd <- IndirectBiomass_Time_noreps %>%
   group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
   mutate(TimeStepRound = ceiling(TimeStep/sumby)) %>%
   group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep)%>%
-  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_CVTime = mean(CVTime, na.rm = T), Mean_SR = mean(SR,na.rm=T)) 
+  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_CVTime = mean(CVTime, na.rm = T), Mean_SR = mean(SR,na.rm=T), Mean_IndivBiomass = mean(IndivBiomass, na.rm=T), Mean_Resources = mean(Resources, na.rm=T)) 
   #group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, TimeStepRound) %>%
   #summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_IndivBiomassFinal = mean(Mean_IndivBiomass, na.rm = T), SD_IndivBiomass = sd(Mean_IndivBiomass, na.rm = T))
 
@@ -729,12 +729,52 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
 	}
 }
 
- IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))] - FinalBiomass
+CheckBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckBiomass) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+ IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- mean(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalBiomass
  
-IndirectED_data$LRRBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalBiomass/IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))])
+IndirectED_data$LRRBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalBiomass/mean(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]))
  
  
 IndirectED_data_noreps$BmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+
+FinalIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
+Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
+for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
+	CurrentIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][w]
+	if(abs(CurrentIndivBiomass - FinalIndivBiomass) > 0.00001){
+		FinalIndivBiomass <- CurrentIndivBiomass
+		Lagt <- w
+	}
+}
+CheckIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckIndivBiomass) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+ IndirectED_data_noreps$IndivBmassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- mean(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalIndivBiomass
+ 
+IndirectED_data$LRRIndivBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalIndivBiomass/mean(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]))
+ 
+IndirectED_data_noreps$IndivBmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+
+FinalResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
+Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
+for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
+	CurrentResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][w]
+	if(abs(CurrentResources - FinalResources) > 0.00001){
+		FinalResources <- CurrentResources
+		Lagt <- w
+	}
+}
+
+CheckResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckResources) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+IndirectED_data_noreps$ResourceChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- mean(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalResources
+ 
+ IndirectED_data$LRRResourceChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalResources/mean(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]))
+ 
+IndirectED_data_noreps$ResourceLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
 FinalSR <- IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
 Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
@@ -746,14 +786,14 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
 	}
 }
 
- IndirectED_data_noreps$SRLoss2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- abs(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))] - FinalSR)
- 
-  IndirectED_data$LRRSRChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalSR/IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))])
- 
- 
-IndirectED_data_noreps$SRLagTime2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+CheckSR <- IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckSR) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
 
-
+ IndirectED_data_noreps$SRLoss2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- mean(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalSR
+ 
+ IndirectED_data$LRRSRChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalSR/mean(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))]))
+ 
+ IndirectED_data_noreps$SRLagTime2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
 #same thing as above, but for CV
 FinalCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
@@ -766,31 +806,71 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
 		Lagt <- w
 	}
 }
+CheckCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckCV) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))-1){ Lagt <- NA} #added the '-1' because the last term in the CVTime is always going to be NaN
 
-
- IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))] - FinalCV
+ IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- mean(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))],na.rm=T) - FinalCV #added na.rm = T because of the NA always present at the first point
  
-  IndirectED_data$LRRCVChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalCV/IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))])
+ IndirectED_data$LRRCVChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Regional"] <- log(FinalCV/mean(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][1:(predel_collecttime/(ePeriod/samplelength))],na.rm=T))
  
-IndirectED_data_noreps$CVLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+ IndirectED_data_noreps$CVLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
  FinalBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
 Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
 for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
 	CurrentBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][w]
 	#'0.000001' fairly arbitrarily chosen, just seemed to match with when things stabilized
-	if(abs(CurrentBiomass - FinalBiomass) > 0.001){
+	if(abs(CurrentBiomass - FinalBiomass) > 0.000001){ #changed from 0.001 on 9.19.2016
 		FinalBiomass <- CurrentBiomass
 		Lagt <- w
 	}	
 }
   
- IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))] - FinalBiomass
+ CheckBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckBiomass) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+ IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- mean(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalBiomass
  
-  IndirectED_data$LRRBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalBiomass/IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))])
- 
+IndirectED_data$LRRBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalBiomass/mean(IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]))
  
 IndirectED_data_noreps$BmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+
+FinalIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
+Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
+for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
+	CurrentIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][w]
+	if(abs(CurrentIndivBiomass - FinalIndivBiomass) > 0.000001){ #probably overkill
+		FinalIndivBiomass <- CurrentIndivBiomass
+		Lagt <- w
+	}
+}
+
+CheckIndivBiomass <- IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckIndivBiomass) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+ IndirectED_data_noreps$IndivBmassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- mean(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalIndivBiomass
+ 
+IndirectED_data$LRRIndivBiomassChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalIndivBiomass/mean(IndirectBiomass_Time_Summd$Mean_IndivBiomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]))
+ 
+IndirectED_data_noreps$IndivBmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
+
+FinalResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
+Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
+for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
+	CurrentResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][w]
+	if(abs(CurrentResources - FinalResources) > 0.0000001){  
+		FinalResources <- CurrentResources
+		Lagt <- w
+	}
+}
+CheckResources <- IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckResources) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
+
+IndirectED_data_noreps$ResourceChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- mean(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalResources
+ 
+ IndirectED_data$LRRResourceChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalResources/mean(IndirectBiomass_Time_Summd$Mean_Resources[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]))
+  
+IndirectED_data_noreps$ResourceLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
 FinalSR <- IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
 Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
@@ -801,10 +881,12 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
 		Lagt <- w
 	}
 }
+CheckSR <- IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckSR) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength)))){ Lagt <- NA}
 
- IndirectED_data_noreps$SRLoss2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- abs(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))] - FinalSR)
+ IndirectED_data_noreps$SRLoss2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- mean(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]) - FinalSR
  
-  IndirectED_data$LRRSRChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalSR/IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))])
+ IndirectED_data$LRRSRChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalSR/mean(IndirectBiomass_Time_Summd$Mean_SR[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))]))
  
 IndirectED_data_noreps$SRLagTime2[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
@@ -820,11 +902,13 @@ for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)
 	}	
 }
   
- IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))] - FinalCV
+ CheckCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))]    
+if(length(which(abs(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][seq((predel_collecttime/(ePeriod/samplelength))+1,(length(sampleV)/sumby))] - CheckCV) <= 0.001))==((length(sampleV)/sumby) - (predel_collecttime/(ePeriod/samplelength))-1)){ Lagt <- NA} #added -1 for reason given in regional section
+
+ IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- mean(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))],na.rm=T) - FinalCV #added na.rm=T to deal with the fact that the first thing is always = NA
  
-  IndirectED_data$LRRCVChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalCV/IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))])
- 
- 
+ IndirectED_data$LRRCVChange[IndirectED_data$Rep==r & IndirectED_data$Dispersal==disp & IndirectED_data$Patch_remove==removeV[j] & IndirectED_data$Species==nSpecies & IndirectED_data$DelPatches==PatchDel & IndirectED_data$Scale=="Local"] <- log(FinalCV/mean(IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][1:(predel_collecttime/(ePeriod/samplelength))],na.rm=T))
+  
 IndirectED_data_noreps$CVLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
 
 ###Effective Diversity Section           
@@ -908,77 +992,6 @@ EffectiveDiv_Time_noreps$ExpShannon[EffectiveDiv_Time_noreps$Rep==r & EffectiveD
       
       ED_data_noreps$SRLoss[ED_data_noreps$Rep==r & ED_data_noreps$Dispersal==disp & ED_data_noreps$Patch_remove==removeV[j] & ED_data_noreps$Species == nSpecies & ED_data_noreps$DelPatches==PatchDel & ED_data_noreps$Scale=="Local"] <- mean(L_loss2$Loss, na.rm = T)
       
-#summarizing indirectbiomass, indirectcvtime over time for BiomassChange and LagTime parameters      
-  IndirectBiomass_Time_Summd <- IndirectBiomass_Time_noreps %>%
-  group_by(Dispersal, Patch_remove, Scale, Species, DelPatches, Rep) %>%
-  mutate(TimeStepRound = ceiling(TimeStep/sumby)) %>%
-  group_by(TimeStepRound, Dispersal,Patch_remove, Scale, Species, DelPatches, Rep)%>%
-  summarize(Mean_Biomass = mean(Biomass, na.rm = T), Mean_CVTime = mean(CVTime, na.rm = T)) 
-  #group_by(Dispersal, Patch_remove, Species, DelPatches, Scale, TimeStepRound) %>%
-  #summarize(SD_Biomass = sd(Mean_Biomass, na.rm = T), Mean_BiomassFinal = mean(Mean_Biomass, na.rm = T), Mean_IndivBiomassFinal = mean(Mean_IndivBiomass, na.rm = T), SD_IndivBiomass = sd(Mean_IndivBiomass, na.rm = T))
-
-FinalBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
-Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
-for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
-	CurrentBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][w]
-	if(abs(CurrentBiomass - FinalBiomass) > 0.001){
-		FinalBiomass <- CurrentBiomass
-		Lagt <- w
-	}
-}
-
- IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))] - FinalBiomass
- 
-IndirectED_data_noreps$BmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
-
-#same thing as above, but for CV
-FinalCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))+1]    
-Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
-#'-1' added in the line below to deal with the fact that the last element of Biomass_Time_Summd$Mean_CVTime will always be NaN due to the finnicky-ness of the average over time nonsense 
-for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)-1){
-	CurrentCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][w]
-	if(abs(CurrentCV - FinalCV) > 0.000001){
-		FinalCV <- CurrentCV
-		Lagt <- w
-	}
-}
-
-
- IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Regional"][(predel_collecttime/(ePeriod/samplelength))] - FinalCV
- 
-IndirectED_data_noreps$CVLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Regional"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
-
- FinalBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
-Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
-for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)){
-	CurrentBiomass <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][w]
-	#'0.000001' fairly arbitrarily chosen, just seemed to match with when things stabilized
-	if(abs(CurrentBiomass - FinalBiomass) > 0.001){
-		FinalBiomass <- CurrentBiomass
-		Lagt <- w
-	}	
-}
-  
- IndirectED_data_noreps$BiomassChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- IndirectBiomass_Time_Summd$Mean_Biomass[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))] - FinalBiomass
- 
-IndirectED_data_noreps$BmassLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
-
-#same thing as above, but for CV
- FinalCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))+1]    
-Lagt <- (predel_collecttime/(ePeriod/samplelength))+1
-for(w in ((predel_collecttime/(ePeriod/samplelength))+1):(length(sampleV)/sumby)-1){
-	CurrentCV <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][w]
-	#'0.000001' fairly arbitrarily chosen, just seemed to match with when things stabilized
-	if(abs(CurrentCV - FinalCV) > 0.000001){ 
-		FinalCV <- CurrentCV
-		Lagt <- w
-	}	
-}
-  
- IndirectED_data_noreps$CVChange[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- IndirectBiomass_Time_Summd$Mean_CVTime[IndirectBiomass_Time_Summd$Rep==r & IndirectBiomass_Time_Summd$Dispersal==disp & IndirectBiomass_Time_Summd$Patch_remove==removeV[j] & IndirectBiomass_Time_Summd$Species == nSpecies & IndirectBiomass_Time_Summd$DelPatches == PatchDel & IndirectBiomass_Time_Summd$Scale=="Local"][(predel_collecttime/(ePeriod/samplelength))] - FinalCV
- 
-IndirectED_data_noreps$CVLagTime[IndirectED_data_noreps$Rep==r & IndirectED_data_noreps$Dispersal==disp & IndirectED_data_noreps$Patch_remove==removeV[j] & IndirectED_data_noreps$Species==nSpecies & IndirectED_data_noreps$DelPatches==PatchDel & IndirectED_data_noreps$Scale=="Local"] <- (Lagt-(predel_collecttime/(ePeriod/samplelength)))*sumby
-
 ##Dataframe dealing with time to last extinction and SR lost (indirect version)
       R_SR.df<-data.table(R_SR=colSums(apply(Abund[-patch.delete,,],3,colSums,na.rm=T)>0))
       R_lastdebt<-R_SR.df%>%
